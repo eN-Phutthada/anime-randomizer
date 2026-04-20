@@ -42,6 +42,7 @@ const translations = {
   searchAnime: { th: "🔍 ค้นหาชื่อเรื่อง...", en: "🔍 Search anime title..." },
   btnSelectAll: { th: "✅ เลือกหมด", en: "✅ Select All" },
   btnDeselectAll: { th: "❌ เอาออก", en: "❌ Deselect All" },
+  lockedBtn: { th: "🔒 ปุ่มถูกล็อก", en: "🔒 Locked" },
 
   // Dynamic Texts
   castingSpell: { th: "กำลังร่ายเวทมนตร์... ✨", en: "Casting spell... ✨" },
@@ -96,7 +97,9 @@ function updateLanguageUI() {
 
   document.getElementById("btnReveal").innerText = t("btnReveal");
 
-  if (!document.getElementById("btnRandom").disabled) {
+  if (isLocked) {
+    document.getElementById("btnRandom").innerText = t("lockedBtn");
+  } else if (!document.getElementById("btnRandom").disabled) {
     document.getElementById("btnRandom").innerText = currentDrawnChar
       ? t("btnRandomAgain")
       : t("btnRandom");
@@ -153,7 +156,39 @@ function toggleLanguage() {
   updateLanguageUI();
 }
 
-// --- Sound System ---
+// --- 🔒 Lock Button System ---
+let isLocked = false;
+
+function toggleLock() {
+  playClickSound();
+  isLocked = !isLocked;
+  updateLockUI();
+}
+
+function updateLockUI() {
+  const btn = document.getElementById("btnRandom");
+  const lockBtn = document.getElementById("btnLock");
+
+  if (isLocked) {
+    btn.disabled = true;
+    btn.innerText = t("lockedBtn");
+    lockBtn.innerText = "🔒";
+    lockBtn.style.borderColor = "var(--primary-color)";
+  } else {
+    lockBtn.innerText = "🔓";
+    lockBtn.style.borderColor = "var(--border-color)";
+
+    if (
+      btn.innerText !== t("searching") &&
+      btn.innerText !== t("castingSpell")
+    ) {
+      btn.disabled = false;
+      btn.innerText = currentDrawnChar ? t("btnRandomAgain") : t("btnRandom");
+    }
+  }
+}
+
+// --- 🎵 Sound System ---
 let audioCtx;
 
 function initAudio() {
@@ -208,7 +243,7 @@ function playRevealSound() {
   setTimeout(() => playTone(1046.5, "sine", 1.0, 0.08), 150);
 }
 
-// --- Theme System ---
+// --- 🌙 Theme System ---
 const currentTheme = localStorage.getItem("animeTheme") || "light";
 if (currentTheme === "dark") {
   document.body.classList.add("dark-mode");
@@ -235,7 +270,7 @@ function toggleTheme() {
   }
 }
 
-// --- Settings & Variables ---
+// --- ⚙️ Settings & Variables ---
 const appSettings = JSON.parse(localStorage.getItem("animeSettings")) || {
   guessMode: false,
   allowDupes: false,
@@ -441,6 +476,7 @@ function removeAnime(index) {
 }
 
 async function randomCharacter() {
+  if (isLocked) return; // Prevent run if locked
   playLoadingSound();
 
   const nameElement = document.getElementById("charName");
@@ -498,8 +534,10 @@ async function randomCharacter() {
       nameElement.innerText = t("noNewChar");
       animeElement.innerText = `${t("fromAnime")} ${randomAnime.title}`;
       loader.style.display = "none";
-      button.disabled = false;
-      button.innerText = t("btnRandom");
+      if (!isLocked) {
+        button.disabled = false;
+        button.innerText = t("btnRandom");
+      }
       if (!allowDupes)
         document.getElementById("btnReset").style.display = "block";
       return;
@@ -540,15 +578,19 @@ async function randomCharacter() {
         hintElement.style.display = "block";
       }
 
-      button.disabled = false;
-      button.innerText = t("btnRandomAgain");
+      if (!isLocked) {
+        button.disabled = false;
+        button.innerText = t("btnRandomAgain");
+      }
     };
     imgElement.src = currentDrawnChar.img;
   } catch (error) {
     nameElement.innerText = t("errorMsg");
     loader.style.display = "none";
-    button.disabled = false;
-    button.innerText = t("btnRandom");
+    if (!isLocked) {
+      button.disabled = false;
+      button.innerText = t("btnRandom");
+    }
   }
 }
 

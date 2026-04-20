@@ -35,7 +35,12 @@
         </div>
 
         <div class="main-buttons">
-            <button id="btnRandom" class="btn-main" onclick="randomCharacter()">🎲 สุ่มตัวละคร!</button>
+            <div class="roll-container">
+                <button id="btnRandom" class="btn-main" onclick="randomCharacter()" style="flex: 1;">🎲
+                    สุ่มตัวละคร!</button>
+                <button id="btnLock" class="btn-lock" onclick="toggleLock()"
+                    title="ล็อกปุ่มสุ่ม / Lock Button">🔓</button>
+            </div>
             <button id="btnReset" class="btn-reset" onclick="resetHistory()" style="display: none;">🔄
                 ล้างความจำการสุ่ม</button>
         </div>

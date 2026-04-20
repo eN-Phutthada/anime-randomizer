@@ -1,5 +1,4 @@
 :root {
-
     --bg-gradient: linear-gradient(135deg, #ffeaa7, #fab1a0, #ff7675);
     --container-bg: rgba(255, 255, 255, 0.85);
     --card-bg: rgba(255, 255, 255, 0.6);
@@ -70,6 +69,7 @@ body {
     cursor: pointer;
     box-shadow: 0 4px 10px var(--shadow-color);
     backdrop-filter: blur(5px);
+    margin-left: 5px;
 }
 
 .icon-btn:hover {
@@ -177,6 +177,13 @@ p#animeName {
     margin-bottom: 25px;
 }
 
+.roll-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    width: 100%;
+}
+
 .btn-main {
     width: 100%;
     padding: 16px;
@@ -208,6 +215,28 @@ p#animeName {
     box-shadow: 0 6px 0 #57606f;
     cursor: not-allowed;
     top: 0;
+    transform: none;
+    filter: none;
+}
+
+.btn-lock {
+    width: 58px;
+    height: 58px;
+    font-size: 24px;
+    border-radius: 18px;
+    border: 2px solid var(--border-color);
+    background: var(--container-bg);
+    cursor: pointer;
+    box-shadow: 0 4px 10px var(--shadow-color);
+    transition: 0.2s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.btn-lock:hover {
+    transform: scale(1.05);
+    border-color: var(--primary-color);
 }
 
 .btn-reset {
