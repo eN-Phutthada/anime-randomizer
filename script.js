@@ -1,3 +1,159 @@
+// --- 🌍 Language System (Translations & AI Disclaimer) ---
+const translations = {
+  title: { th: "✨ ฉันคือใครในอนิเมะ? ✨", en: "✨ Who am I in Anime? ✨" },
+  clickHint: {
+    th: "🔍 กดที่รูปเพื่อดูแบบเต็มจอ",
+    en: "🔍 Click image to view full screen",
+  },
+  charNameDefault: { th: "พร้อมแล้วสุ่มเลย!", en: "Ready, set, roll!" },
+  btnReveal: { th: "👁️ ดูเฉลย", en: "👁️ Reveal" },
+  btnRandom: { th: "🎲 สุ่มตัวละคร!", en: "🎲 Roll Character!" },
+  btnRandomAgain: { th: "🎲 สุ่มต่อ!", en: "🎲 Roll Again!" },
+  btnReset: { th: "🔄 ล้างความจำการสุ่ม", en: "🔄 Clear Roll History" },
+  settingsSummary: {
+    th: "⚙️ ตั้งค่าการสุ่ม & ระบบ",
+    en: "⚙️ Randomizer Settings",
+  },
+  sound: { th: "🎵 เสียงประกอบ (Sound Effects)", en: "🎵 Sound Effects" },
+  guessMode: {
+    th: "❓ โหมดทายชื่อ (ปิดบังชื่อ)",
+    en: "❓ Guess Mode (Hide Name)",
+  },
+  allowDupes: { th: "🔁 สุ่มเจอตัวเดิมซ้ำได้", en: "🔁 Allow Duplicates" },
+  role: { th: "🎭 บทบาทตัวละคร", en: "🎭 Character Role" },
+  roleAll: {
+    th: "ทั้งหมด (พระเอก & ตัวประกอบ)",
+    en: "All (Main & Supporting)",
+  },
+  roleMain: { th: "เฉพาะตัวเอก (Main)", en: "Main Characters Only" },
+  roleSupp: {
+    th: "เฉพาะตัวสมทบ (Supporting)",
+    en: "Supporting Characters Only",
+  },
+  topX: { th: "🏆 สุ่มจากตัวท็อป", en: "🏆 Roll from Top Characters" },
+  topXHint: { th: "อันดับ 1 ถึง", en: "Rank 1 to" },
+  minPop: { th: "❤️ ขั้นต่ำความนิยม", en: "❤️ Min Popularity" },
+  librarySummary: { th: "📚 คลังอนิเมะของฉัน", en: "📚 My Anime Library" },
+  animeInput: {
+    th: "🔗 ลิงก์ MyAnimeList หรือ ID",
+    en: "🔗 MyAnimeList Link or ID",
+  },
+  btnAdd: { th: "➕ เพิ่มเรื่อง", en: "➕ Add Anime" },
+  searchAnime: { th: "🔍 ค้นหาชื่อเรื่อง...", en: "🔍 Search anime title..." },
+  btnSelectAll: { th: "✅ เลือกหมด", en: "✅ Select All" },
+  btnDeselectAll: { th: "❌ เอาออก", en: "❌ Deselect All" },
+
+  // Dynamic Texts
+  castingSpell: { th: "กำลังร่ายเวทมนตร์... ✨", en: "Casting spell... ✨" },
+  searching: { th: "กำลังค้นหา...", en: "Searching..." },
+  fromAnime: { th: "จากเรื่อง:", en: "From:" },
+  popularity: { th: "❤️ ความนิยม:", en: "❤️ Popularity:" },
+  people: { th: "คน", en: "users" },
+  errorMsg: {
+    th: "เกิดข้อผิดพลาด ลองใหม่นะ 😅",
+    en: "Error occurred, try again 😅",
+  },
+  noNewChar: {
+    th: "ไม่พบตัวละครใหม่แล้ว! (ลองกดยอมให้สุ่มซ้ำได้ในตั้งค่าดูนะ)",
+    en: "No new characters! (Try allowing duplicates in settings)",
+  },
+  needOneAnime: {
+    th: "กรุณาเลือกอนิเมะอย่างน้อย 1 เรื่อง!",
+    en: "Please select at least 1 anime!",
+  },
+  clearSuccess: {
+    th: "ล้างความจำเรียบร้อย! ตอนนี้สุ่มตัวเดิมซ้ำได้แล้วครับ",
+    en: "History cleared! You can now roll duplicates.",
+  },
+  alreadyInLib: {
+    th: "เรื่องนี้อยู่ในคลังแล้วครับ!",
+    en: "This anime is already in your library!",
+  },
+  invalidLink: {
+    th: "กรุณาใส่ลิงก์หรือ ID ให้ถูกต้องครับ",
+    en: "Please enter a valid link or ID.",
+  },
+  notFound: { th: "ไม่พบข้อมูลอนิเมะ", en: "Anime not found." },
+  removeConfirm: { th: "ต้องการลบ", en: "Are you sure you want to remove" },
+};
+
+let currentLang = localStorage.getItem("animeLang") || "th";
+
+function t(key) {
+  return translations[key][currentLang] || key;
+}
+
+function updateLanguageUI() {
+  document.getElementById("text_title").innerText = t("title");
+  document.getElementById("clickHint").innerText = t("clickHint");
+
+  if (
+    !currentDrawnChar &&
+    document.getElementById("charImg").style.display === "none"
+  ) {
+    document.getElementById("charName").innerText = t("charNameDefault");
+  }
+
+  document.getElementById("btnReveal").innerText = t("btnReveal");
+
+  if (!document.getElementById("btnRandom").disabled) {
+    document.getElementById("btnRandom").innerText = currentDrawnChar
+      ? t("btnRandomAgain")
+      : t("btnRandom");
+  }
+
+  document.getElementById("btnReset").innerText = t("btnReset");
+  document.getElementById("text_settingsSummary").innerText =
+    t("settingsSummary");
+  document.getElementById("text_sound").innerText = t("sound");
+  document.getElementById("text_guessMode").innerText = t("guessMode");
+  document.getElementById("text_allowDupes").innerText = t("allowDupes");
+  document.getElementById("text_role").innerText = t("role");
+  document.getElementById("opt_roleAll").innerText = t("roleAll");
+  document.getElementById("opt_roleMain").innerText = t("roleMain");
+  document.getElementById("opt_roleSupp").innerText = t("roleSupp");
+  document.getElementById("text_topX").innerText = t("topX");
+  document.getElementById("text_topXHint").innerText = t("topXHint");
+  document.getElementById("text_minPop").innerText = t("minPop");
+  document.getElementById("text_librarySummary").innerText =
+    t("librarySummary");
+  document.getElementById("animeInput").placeholder = t("animeInput");
+  document.getElementById("btnAdd").innerText = t("btnAdd");
+  document.getElementById("searchAnime").placeholder = t("searchAnime");
+  document.getElementById("btnSelectAll").innerText = t("btnSelectAll");
+  document.getElementById("btnDeselectAll").innerText = t("btnDeselectAll");
+  document.getElementById("text_aiDisclaimer").innerText = t("aiDisclaimer");
+
+  if (
+    currentDrawnChar &&
+    document.getElementById("animeName").innerText !== ""
+  ) {
+    if (
+      !appSettings.guessMode ||
+      document.getElementById("btnReveal").style.display === "none"
+    ) {
+      document.getElementById("animeName").innerText =
+        `${t("fromAnime")} ${currentDrawnChar.anime}`;
+      document.getElementById("charPop").innerText =
+        `${t("popularity")} ${currentDrawnChar.pop.toLocaleString()} ${t("people")}`;
+    } else {
+      document.getElementById("animeName").innerText =
+        `${t("fromAnime")} ????????`;
+    }
+  }
+
+  document.getElementById("langToggle").innerText =
+    currentLang === "th" ? "EN" : "TH";
+}
+
+function toggleLanguage() {
+  playClickSound();
+  currentLang = currentLang === "th" ? "en" : "th";
+  localStorage.setItem("animeLang", currentLang);
+  updateLanguageUI();
+}
+
+// --- Sound System ---
 let audioCtx;
 
 function initAudio() {
@@ -27,6 +183,7 @@ function playTone(freq, type, duration, vol) {
 function playClickSound() {
   playTone(600, "sine", 0.1, 0.03);
 }
+
 function playLoadingSound() {
   if (!appSettings.soundEnabled) return;
   initAudio();
@@ -42,6 +199,7 @@ function playLoadingSound() {
   osc.start();
   osc.stop(audioCtx.currentTime + 0.4);
 }
+
 function playRevealSound() {
   if (!appSettings.soundEnabled) return;
   playTone(523.25, "sine", 0.6, 0.05);
@@ -50,6 +208,7 @@ function playRevealSound() {
   setTimeout(() => playTone(1046.5, "sine", 1.0, 0.08), 150);
 }
 
+// --- Theme System ---
 const currentTheme = localStorage.getItem("animeTheme") || "light";
 if (currentTheme === "dark") {
   document.body.classList.add("dark-mode");
@@ -63,7 +222,6 @@ if (currentTheme === "dark") {
 
 function toggleTheme() {
   playClickSound();
-
   if (document.body.classList.contains("light-mode")) {
     document.body.classList.remove("light-mode");
     document.body.classList.add("dark-mode");
@@ -77,6 +235,7 @@ function toggleTheme() {
   }
 }
 
+// --- Settings & Variables ---
 const appSettings = JSON.parse(localStorage.getItem("animeSettings")) || {
   guessMode: false,
   allowDupes: false,
@@ -221,7 +380,7 @@ function renderAnimeList() {
     card.innerHTML = `
             <img src="${anime.img}" alt="${anime.title}" loading="lazy">
             <div class="card-title">${anime.title}</div>
-            <div class="btn-remove" onclick="removeAnime(${index}); event.stopPropagation();" title="ลบเรื่องนี้">✕</div>
+            <div class="btn-remove" onclick="removeAnime(${index}); event.stopPropagation();" title="Remove">✕</div>
         `;
     selectorDiv.appendChild(card);
   });
@@ -245,8 +404,8 @@ async function addAnime() {
   const idMatch = value.match(/\/anime\/(\d+)/) || value.match(/^(\d+)$/);
   const animeId = idMatch ? idMatch[1] : null;
 
-  if (!animeId) return alert("กรุณาใส่ลิงก์หรือ ID ให้ถูกต้องครับ");
-  input.value = "กำลังค้นหา...";
+  if (!animeId) return alert(t("invalidLink"));
+  input.value = t("searching");
   try {
     const res = await fetch(`https://api.jikan.moe/v4/anime/${animeId}`);
     const result = await res.json();
@@ -262,11 +421,11 @@ async function addAnime() {
         localStorage.setItem("myAnimeListV5", JSON.stringify(myAnimeList));
         renderAnimeList();
       } else {
-        alert("เรื่องนี้อยู่ในคลังแล้วครับ!");
+        alert(t("alreadyInLib"));
       }
     }
   } catch (e) {
-    alert("ไม่พบข้อมูลอนิเมะ");
+    alert(t("notFound"));
   } finally {
     input.value = "";
   }
@@ -274,7 +433,7 @@ async function addAnime() {
 
 function removeAnime(index) {
   playClickSound();
-  if (confirm(`ต้องการลบ ${myAnimeList[index].title} ใช่ไหม?`)) {
+  if (confirm(`${t("removeConfirm")} ${myAnimeList[index].title}?`)) {
     myAnimeList.splice(index, 1);
     localStorage.setItem("myAnimeListV5", JSON.stringify(myAnimeList));
     renderAnimeList();
@@ -296,18 +455,17 @@ async function randomCharacter() {
   const { role, topX, minPop, guessMode, allowDupes } = appSettings;
   const activeAnimes = myAnimeList.filter((a) => a.active);
 
-  if (activeAnimes.length === 0)
-    return alert("กรุณาเลือกอนิเมะอย่างน้อย 1 เรื่อง!");
+  if (activeAnimes.length === 0) return alert(t("needOneAnime"));
 
   const randomAnime =
     activeAnimes[Math.floor(Math.random() * activeAnimes.length)];
 
   button.disabled = true;
-  button.innerText = "กำลังค้นหา...";
+  button.innerText = t("searching");
   imgElement.style.display = "none";
   imgElement.classList.remove("blur-mode");
   loader.style.display = "block";
-  nameElement.innerText = "กำลังร่ายเวทมนตร์... ✨";
+  nameElement.innerText = t("castingSpell");
   animeElement.innerText = "";
   popElement.style.display = "none";
   hintElement.style.display = "none";
@@ -337,12 +495,11 @@ async function randomCharacter() {
     }
 
     if (availableCharacters.length === 0) {
-      nameElement.innerText =
-        "ไม่พบตัวละครใหม่แล้ว! (ลองกดยอมให้สุ่มซ้ำได้ในตั้งค่าดูนะ)";
-      animeElement.innerText = `จากเรื่อง: ${randomAnime.title}`;
+      nameElement.innerText = t("noNewChar");
+      animeElement.innerText = `${t("fromAnime")} ${randomAnime.title}`;
       loader.style.display = "none";
       button.disabled = false;
-      button.innerText = "🎲 สุ่มเลย!";
+      button.innerText = t("btnRandom");
       if (!allowDupes)
         document.getElementById("btnReset").style.display = "block";
       return;
@@ -360,7 +517,7 @@ async function randomCharacter() {
     };
 
     if (!allowDupes) {
-      drawnHistory.push(currentDrawnChar.mal_id);
+      drawnHistory.push(randomPick.character.mal_id);
       sessionStorage.setItem("drawnHistory", JSON.stringify(drawnHistory));
       updateResetButton();
     }
@@ -373,25 +530,25 @@ async function randomCharacter() {
 
       if (guessMode) {
         nameElement.innerText = "????????";
-        animeElement.innerText = "จากเรื่อง: ????????";
+        animeElement.innerText = `${t("fromAnime")} ????????`;
         btnReveal.style.display = "inline-block";
       } else {
         nameElement.innerText = currentDrawnChar.name;
-        animeElement.innerText = `จากเรื่อง: ${currentDrawnChar.anime}`;
+        animeElement.innerText = `${t("fromAnime")} ${currentDrawnChar.anime}`;
         popElement.style.display = "inline-block";
-        popElement.innerText = `❤️ ความนิยม: ${currentDrawnChar.pop.toLocaleString()} คน`;
+        popElement.innerText = `${t("popularity")} ${currentDrawnChar.pop.toLocaleString()} ${t("people")}`;
         hintElement.style.display = "block";
       }
 
       button.disabled = false;
-      button.innerText = "🎲 สุ่มต่อ!";
+      button.innerText = t("btnRandomAgain");
     };
     imgElement.src = currentDrawnChar.img;
   } catch (error) {
-    nameElement.innerText = "เกิดข้อผิดพลาด ลองใหม่นะ 😅";
+    nameElement.innerText = t("errorMsg");
     loader.style.display = "none";
     button.disabled = false;
-    button.innerText = "🎲 สุ่มเลย!";
+    button.innerText = t("btnRandom");
   }
 }
 
@@ -401,13 +558,13 @@ function revealCharacter() {
   document.getElementById("charImg").classList.remove("blur-mode");
   document.getElementById("charName").innerText = currentDrawnChar.name;
   document.getElementById("animeName").innerText =
-    `จากเรื่อง: ${currentDrawnChar.anime}`;
+    `${t("fromAnime")} ${currentDrawnChar.anime}`;
   document.getElementById("btnReveal").style.display = "none";
   document.getElementById("clickHint").style.display = "block";
 
   const popElement = document.getElementById("charPop");
   popElement.style.display = "inline-block";
-  popElement.innerText = `❤️ ความนิยม: ${currentDrawnChar.pop.toLocaleString()} คน`;
+  popElement.innerText = `${t("popularity")} ${currentDrawnChar.pop.toLocaleString()} ${t("people")}`;
 }
 
 function resetHistory() {
@@ -415,7 +572,7 @@ function resetHistory() {
   drawnHistory = [];
   sessionStorage.removeItem("drawnHistory");
   updateResetButton();
-  alert("ล้างความจำเรียบร้อย! ตอนนี้สุ่มตัวเดิมซ้ำได้แล้วครับ");
+  alert(t("clearSuccess"));
 }
 
 function updateResetButton() {
@@ -426,10 +583,6 @@ function updateResetButton() {
     document.getElementById("btnReset").style.display = "none";
   }
 }
-
-sortAnimeList();
-renderAnimeList();
-syncMissingImages();
 
 const modal = document.getElementById("imageModal");
 function openModal() {
@@ -453,3 +606,9 @@ function closeModal() {
   playClickSound();
   modal.style.display = "none";
 }
+
+// Initial Calls
+sortAnimeList();
+renderAnimeList();
+syncMissingImages();
+updateLanguageUI(); // Update UI on first load based on saved preference
