@@ -244,31 +244,41 @@ function playRevealSound() {
 }
 
 // --- 🌙 Theme System ---
-const currentTheme = localStorage.getItem("animeTheme") || "light";
-if (currentTheme === "dark") {
-  document.body.classList.add("dark-mode");
-  document.body.classList.remove("light-mode");
-  document.getElementById("themeToggle").innerText = "🌙";
-} else {
-  document.body.classList.add("light-mode");
-  document.body.classList.remove("dark-mode");
-  document.getElementById("themeToggle").innerText = "🌞";
-}
+const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)");
 
-function toggleTheme() {
-  playClickSound();
-  if (document.body.classList.contains("light-mode")) {
-    document.body.classList.remove("light-mode");
+function applyTheme(theme) {
+  if (theme === "dark") {
     document.body.classList.add("dark-mode");
+    document.body.classList.remove("light-mode");
     document.getElementById("themeToggle").innerText = "🌙";
-    localStorage.setItem("animeTheme", "dark");
   } else {
     document.body.classList.remove("dark-mode");
     document.body.classList.add("light-mode");
     document.getElementById("themeToggle").innerText = "🌞";
-    localStorage.setItem("animeTheme", "light");
   }
 }
+
+const savedTheme = localStorage.getItem("animeTheme");
+if (savedTheme) {
+  applyTheme(savedTheme);
+} else {
+  applyTheme(prefersDarkScheme.matches ? "dark" : "light");
+}
+
+function toggleTheme() {
+  playClickSound();
+  const isCurrentlyLight = document.body.classList.contains("light-mode");
+  const newTheme = isCurrentlyLight ? "dark" : "light";
+
+  applyTheme(newTheme);
+  localStorage.setItem("animeTheme", newTheme);
+}
+
+prefersDarkScheme.addEventListener("change", (e) => {
+  if (!localStorage.getItem("animeTheme")) {
+    applyTheme(e.matches ? "dark" : "light");
+  }
+});
 
 // --- ⚙️ Settings & Variables ---
 const appSettings = JSON.parse(localStorage.getItem("animeSettings")) || {
