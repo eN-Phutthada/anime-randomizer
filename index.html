@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ฉันคือใครในอนิเมะ? (Ultimate Edition)</title>
+    <title> ฉันคือใครในอนิเมะ? </title>
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=Itim&family=Kanit:wght@300;400;600&display=swap"
@@ -12,10 +12,9 @@
     <link rel="stylesheet" href="style.css">
 </head>
 
-<body>
-
+<body class="light-mode">
     <div class="top-actions">
-        <button id="themeToggle" class="icon-btn" onclick="toggleTheme()" title="สลับโหมด มืด/สว่าง">🌙</button>
+        <button id="themeToggle" class="icon-btn" onclick="toggleTheme()" title="สลับโหมด มืด/สว่าง">🌞</button>
     </div>
 
     <div class="container">
@@ -40,22 +39,28 @@
         </div>
 
         <details class="collapsible-section">
-            <summary>⚙️ ตั้งค่าการสุ่ม</summary>
+            <summary>⚙️ ตั้งค่าการสุ่ม & ระบบ</summary>
             <div class="settings-panel">
                 <div class="setting-row">
-                    <span class="toggle-label">❓ โหมดทายชื่อ (ปิดบังชื่อไว้เล่นกับเพื่อน)</span>
-                    <label class="switch"><input type="checkbox" id="guessMode" onchange="saveSettings()"><span
-                            class="slider"></span></label>
+                    <span class="toggle-label">🎵 เสียงประกอบ (Sound Effects)</span>
+                    <label class="switch"><input type="checkbox" id="soundEnabled"
+                            onchange="saveSettings(); playClickSound();" checked><span class="slider"></span></label>
+                </div>
+                <hr class="mini-divider">
+                <div class="setting-row">
+                    <span class="toggle-label">❓ โหมดทายชื่อ (ปิดบังชื่อ)</span>
+                    <label class="switch"><input type="checkbox" id="guessMode"
+                            onchange="saveSettings(); playClickSound();"><span class="slider"></span></label>
                 </div>
                 <div class="setting-row">
                     <span class="toggle-label">🔁 สุ่มเจอตัวเดิมซ้ำได้</span>
-                    <label class="switch"><input type="checkbox" id="allowDupes" onchange="saveSettings()"><span
-                            class="slider"></span></label>
+                    <label class="switch"><input type="checkbox" id="allowDupes"
+                            onchange="saveSettings(); playClickSound();"><span class="slider"></span></label>
                 </div>
                 <hr class="mini-divider">
                 <div class="setting-row">
                     <span class="toggle-label">🎭 บทบาทตัวละคร</span>
-                    <select id="roleFilter" class="dropdown-input" onchange="saveSettings()">
+                    <select id="roleFilter" class="dropdown-input" onchange="saveSettings(); playClickSound();">
                         <option value="All">ทั้งหมด (พระเอก & ตัวประกอบ)</option>
                         <option value="Main">เฉพาะตัวเอก (Main)</option>
                         <option value="Supporting">เฉพาะตัวสมทบ (Supporting)</option>
@@ -66,13 +71,13 @@
                     <div style="display: flex; align-items: center; gap: 5px;">
                         <span class="hint-text">อันดับ 1 ถึง</span>
                         <input type="number" id="topX" class="num-input" value="20" min="1" max="100"
-                            onchange="saveSettings()">
+                            onchange="saveSettings(); playClickSound();">
                     </div>
                 </div>
                 <div class="setting-row">
                     <span class="toggle-label">❤️ ขั้นต่ำความนิยม</span>
                     <input type="number" id="minPopularity" class="num-input" value="100" step="100" min="0"
-                        onchange="saveSettings()">
+                        onchange="saveSettings(); playClickSound();">
                 </div>
             </div>
         </details>
@@ -87,13 +92,20 @@
                 <div class="anime-controls">
                     <input type="text" id="searchAnime" placeholder="🔍 ค้นหาชื่อเรื่อง..." oninput="filterAnime()">
                     <div class="bulk-actions">
-                        <button onclick="toggleAllAnime(true)" class="btn-bulk btn-select">✅ เลือกหมด</button>
-                        <button onclick="toggleAllAnime(false)" class="btn-bulk btn-deselect">❌ เอาออก</button>
+                        <button onclick="toggleAllAnime(true); playClickSound();" class="btn-bulk btn-select">✅
+                            เลือกหมด</button>
+                        <button onclick="toggleAllAnime(false); playClickSound();" class="btn-bulk btn-deselect">❌
+                            เอาออก</button>
                     </div>
                 </div>
                 <div class="anime-grid-container" id="animeSelector"></div>
             </div>
         </details>
+    </div>
+
+    <div class="credits-footer">
+        <p>💻 Created with ❤️ by <a href="https://github.com/eN-Phutthada" target="_blank">eN</a></p>
+        <p>⚡ Powered by <a href="https://jikan.moe/" target="_blank">Jikan API</a> (MyAnimeList)</p>
     </div>
 
     <div id="imageModal" class="modal" onclick="closeModal()">

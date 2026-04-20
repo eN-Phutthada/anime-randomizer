@@ -1,14 +1,80 @@
-const currentTheme = localStorage.getItem("animeTheme") || "dark";
-if (currentTheme === "light") {
+let audioCtx;
+
+function initAudio() {
+  if (!audioCtx)
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === "suspended") audioCtx.resume();
+}
+
+function playTone(freq, type, duration, vol) {
+  if (!appSettings.soundEnabled) return;
+  initAudio();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+  gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(
+    0.001,
+    audioCtx.currentTime + duration,
+  );
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.start();
+  osc.stop(audioCtx.currentTime + duration);
+}
+
+function playClickSound() {
+  playTone(600, "sine", 0.1, 0.03);
+}
+function playLoadingSound() {
+  if (!appSettings.soundEnabled) return;
+  initAudio();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = "triangle";
+  osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.4);
+  gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
+  gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.4);
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.start();
+  osc.stop(audioCtx.currentTime + 0.4);
+}
+function playRevealSound() {
+  if (!appSettings.soundEnabled) return;
+  playTone(523.25, "sine", 0.6, 0.05);
+  playTone(659.25, "sine", 0.6, 0.05);
+  setTimeout(() => playTone(783.99, "sine", 0.6, 0.05), 50);
+  setTimeout(() => playTone(1046.5, "sine", 1.0, 0.08), 150);
+}
+
+const currentTheme = localStorage.getItem("animeTheme") || "light";
+if (currentTheme === "dark") {
+  document.body.classList.add("dark-mode");
+  document.body.classList.remove("light-mode");
+  document.getElementById("themeToggle").innerText = "🌙";
+} else {
   document.body.classList.add("light-mode");
+  document.body.classList.remove("dark-mode");
   document.getElementById("themeToggle").innerText = "🌞";
 }
 
 function toggleTheme() {
-  document.body.classList.toggle("light-mode");
-  const isLight = document.body.classList.contains("light-mode");
-  document.getElementById("themeToggle").innerText = isLight ? "🌞" : "🌙";
-  localStorage.setItem("animeTheme", isLight ? "light" : "dark");
+  playClickSound();
+
+  if (document.body.classList.contains("light-mode")) {
+    document.body.classList.remove("light-mode");
+    document.body.classList.add("dark-mode");
+    document.getElementById("themeToggle").innerText = "🌙";
+    localStorage.setItem("animeTheme", "dark");
+  } else {
+    document.body.classList.remove("dark-mode");
+    document.body.classList.add("light-mode");
+    document.getElementById("themeToggle").innerText = "🌞";
+    localStorage.setItem("animeTheme", "light");
+  }
 }
 
 const appSettings = JSON.parse(localStorage.getItem("animeSettings")) || {
@@ -17,10 +83,12 @@ const appSettings = JSON.parse(localStorage.getItem("animeSettings")) || {
   role: "All",
   topX: 20,
   minPop: 100,
+  soundEnabled: true,
 };
 
 document.getElementById("guessMode").checked = appSettings.guessMode;
 document.getElementById("allowDupes").checked = appSettings.allowDupes;
+document.getElementById("soundEnabled").checked = appSettings.soundEnabled;
 document.getElementById("roleFilter").value = appSettings.role;
 document.getElementById("topX").value = appSettings.topX;
 document.getElementById("minPopularity").value = appSettings.minPop;
@@ -28,6 +96,7 @@ document.getElementById("minPopularity").value = appSettings.minPop;
 function saveSettings() {
   appSettings.guessMode = document.getElementById("guessMode").checked;
   appSettings.allowDupes = document.getElementById("allowDupes").checked;
+  appSettings.soundEnabled = document.getElementById("soundEnabled").checked;
   appSettings.role = document.getElementById("roleFilter").value;
   appSettings.topX = parseInt(document.getElementById("topX").value) || 20;
   appSettings.minPop =
@@ -101,7 +170,7 @@ if (!myAnimeList || myAnimeList.length < 60) {
   ];
   myAnimeList = megaAnimePack.map((anime) => ({
     ...anime,
-    img: `https://via.placeholder.com/150x220/2a2a40/ff4757?text=Loading...`,
+    img: `https://via.placeholder.com/150x220/ffffff/ff4757?text=Loading...`,
     active: true,
   }));
   localStorage.setItem("myAnimeListV5", JSON.stringify(myAnimeList));
@@ -144,6 +213,7 @@ function renderAnimeList() {
     card.className = `anime-card ${anime.active ? "active" : ""}`;
     card.onclick = (e) => {
       if (e.target.classList.contains("btn-remove")) return;
+      playClickSound();
       anime.active = !anime.active;
       localStorage.setItem("myAnimeListV5", JSON.stringify(myAnimeList));
       renderAnimeList();
@@ -169,6 +239,7 @@ function toggleAllAnime(state) {
 }
 
 async function addAnime() {
+  playClickSound();
   const input = document.getElementById("animeInput");
   let value = input.value.trim();
   const idMatch = value.match(/\/anime\/(\d+)/) || value.match(/^(\d+)$/);
@@ -202,6 +273,7 @@ async function addAnime() {
 }
 
 function removeAnime(index) {
+  playClickSound();
   if (confirm(`ต้องการลบ ${myAnimeList[index].title} ใช่ไหม?`)) {
     myAnimeList.splice(index, 1);
     localStorage.setItem("myAnimeListV5", JSON.stringify(myAnimeList));
@@ -210,6 +282,8 @@ function removeAnime(index) {
 }
 
 async function randomCharacter() {
+  playLoadingSound();
+
   const nameElement = document.getElementById("charName");
   const animeElement = document.getElementById("animeName");
   const imgElement = document.getElementById("charImg");
@@ -295,6 +369,8 @@ async function randomCharacter() {
       loader.style.display = "none";
       imgElement.style.display = "block";
 
+      playRevealSound();
+
       if (guessMode) {
         nameElement.innerText = "????????";
         animeElement.innerText = "จากเรื่อง: ????????";
@@ -321,6 +397,7 @@ async function randomCharacter() {
 
 function revealCharacter() {
   if (!currentDrawnChar) return;
+  playRevealSound();
   document.getElementById("charImg").classList.remove("blur-mode");
   document.getElementById("charName").innerText = currentDrawnChar.name;
   document.getElementById("animeName").innerText =
@@ -334,6 +411,7 @@ function revealCharacter() {
 }
 
 function resetHistory() {
+  playClickSound();
   drawnHistory = [];
   sessionStorage.removeItem("drawnHistory");
   updateResetButton();
@@ -360,7 +438,7 @@ function openModal() {
     document.getElementById("btnReveal").style.display !== "none"
   )
     return;
-
+  playClickSound();
   document.getElementById("modalImg").src =
     document.getElementById("charImg").src;
   document.getElementById("modalName").innerText =
@@ -372,5 +450,6 @@ function openModal() {
   modal.style.display = "flex";
 }
 function closeModal() {
+  playClickSound();
   modal.style.display = "none";
 }
