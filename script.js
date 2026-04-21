@@ -1,4 +1,4 @@
-// --- 🌍 Language System (Translations & AI Disclaimer) ---
+// --- Language System (Translations & AI Disclaimer) ---
 const translations = {
   title: { th: "✨ ฉันคือใครในอนิเมะ? ✨", en: "✨ Who am I in Anime? ✨" },
   clickHint: {
@@ -156,7 +156,7 @@ function toggleLanguage() {
   updateLanguageUI();
 }
 
-// --- 🔒 Lock Button System ---
+// --- Lock Button System ---
 let isLocked = false;
 
 function toggleLock() {
@@ -188,7 +188,7 @@ function updateLockUI() {
   }
 }
 
-// --- 🎵 Sound System ---
+// --- Sound System ---
 let audioCtx;
 
 function initAudio() {
@@ -243,7 +243,34 @@ function playRevealSound() {
   setTimeout(() => playTone(1046.5, "sine", 1.0, 0.08), 150);
 }
 
-// --- 🌙 Theme System ---
+// --- Hedbanz Mode System ---
+let isHedbanzMode = false;
+
+function toggleHedbanz() {
+  playClickSound();
+  isHedbanzMode = !isHedbanzMode;
+
+  const container = document.querySelector(".container");
+  const btn = document.getElementById("hedbanzToggle");
+
+  if (isHedbanzMode) {
+    container.classList.add("hedbanz-mode");
+    btn.innerText = "📱";
+    btn.style.borderColor = "var(--primary-color)";
+    btn.style.background = "var(--primary-color)";
+
+    if (!currentDrawnChar && !isLocked) {
+      randomCharacter();
+    }
+  } else {
+    container.classList.remove("hedbanz-mode");
+    btn.innerText = "🙃";
+    btn.style.borderColor = "var(--border-color)";
+    btn.style.background = "var(--container-bg)";
+  }
+}
+
+// --- Theme System ---
 const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)");
 
 function applyTheme(theme) {
@@ -280,7 +307,7 @@ prefersDarkScheme.addEventListener("change", (e) => {
   }
 });
 
-// --- ⚙️ Settings & Variables ---
+// --- Settings & Variables ---
 const appSettings = JSON.parse(localStorage.getItem("animeSettings")) || {
   guessMode: false,
   allowDupes: false,
