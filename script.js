@@ -336,7 +336,7 @@ if (!myAnimeList || myAnimeList.length < 60) {
     { id: 52701, title: "Delicious in Dungeon" },
     { id: 38000, title: "Demon Slayer" },
     { id: 235, title: "Detective Conan" },
-    { id: 5081, title: "Doraemon" },
+    { id: 5081, title: "Bakemonogatari" },
     { id: 30694, title: "Dragon Ball Super" },
     { id: 6702, title: "Fairy Tail" },
     { id: 10087, title: "Fate/Zero" },
