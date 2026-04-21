@@ -88,10 +88,7 @@ function updateLanguageUI() {
   document.getElementById("text_title").innerText = t("title");
   document.getElementById("clickHint").innerText = t("clickHint");
 
-  if (
-    !currentDrawnChar &&
-    document.getElementById("charImg").style.display === "none"
-  ) {
+  if (!currentDrawnChar) {
     document.getElementById("charName").innerText = t("charNameDefault");
   }
 
@@ -241,33 +238,6 @@ function playRevealSound() {
   playTone(659.25, "sine", 0.6, 0.05);
   setTimeout(() => playTone(783.99, "sine", 0.6, 0.05), 50);
   setTimeout(() => playTone(1046.5, "sine", 1.0, 0.08), 150);
-}
-
-// --- Hedbanz Mode System ---
-let isHedbanzMode = false;
-
-function toggleHedbanz() {
-  playClickSound();
-  isHedbanzMode = !isHedbanzMode;
-
-  const container = document.querySelector(".container");
-  const btn = document.getElementById("hedbanzToggle");
-
-  if (isHedbanzMode) {
-    container.classList.add("hedbanz-mode");
-    btn.innerText = "📱";
-    btn.style.borderColor = "var(--primary-color)";
-    btn.style.background = "var(--primary-color)";
-
-    if (!currentDrawnChar && !isLocked) {
-      randomCharacter();
-    }
-  } else {
-    container.classList.remove("hedbanz-mode");
-    btn.innerText = "🙃";
-    btn.style.borderColor = "var(--border-color)";
-    btn.style.background = "var(--container-bg)";
-  }
 }
 
 // --- Theme System ---
@@ -665,11 +635,6 @@ function updateResetButton() {
 
 const modal = document.getElementById("imageModal");
 function openModal() {
-  if (
-    appSettings.guessMode &&
-    document.getElementById("btnReveal").style.display !== "none"
-  )
-    return;
   playClickSound();
   document.getElementById("modalImg").src =
     document.getElementById("charImg").src;
@@ -677,8 +642,17 @@ function openModal() {
     document.getElementById("charName").innerText;
   document.getElementById("modalAnime").innerText =
     document.getElementById("animeName").innerText;
-  document.getElementById("modalPop").innerText =
-    document.getElementById("charPop").innerText;
+
+  const charPop = document.getElementById("charPop");
+  const modalPop = document.getElementById("modalPop");
+
+  if (charPop.style.display !== "none") {
+    modalPop.innerText = charPop.innerText;
+    modalPop.style.display = "inline-block";
+  } else {
+    modalPop.style.display = "none";
+  }
+
   modal.style.display = "flex";
 }
 function closeModal() {

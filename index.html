@@ -15,10 +15,8 @@
 <body class="light-mode">
     <div class="top-actions">
         <button id="langToggle" class="icon-btn" onclick="toggleLanguage()" title="เปลี่ยนภาษา / Change Language"
-            style="font-weight:bold; font-size: 16px;">EN</button>
+            style="font-weight:bold; font-size: 16px;">🌐</button>
         <button id="themeToggle" class="icon-btn" onclick="toggleTheme()" title="สลับโหมด มืด/สว่าง">🌞</button>
-        <button id="hedbanzToggle" class="icon-btn" onclick="toggleHedbanz()"
-            title="โหมดหน้าผาก / Hedbanz Mode">🙃</button>
     </div>
 
     <div class="container">
@@ -117,8 +115,8 @@
         <p>⚡ Powered by <a href="https://jikan.moe/" target="_blank">Jikan API</a> (MyAnimeList)</p>
     </div>
 
-    <div id="imageModal" class="modal" onclick="closeModal()">
-        <span class="close">&times;</span>
+    <div id="imageModal" class="modal">
+        <span class="close" onclick="closeModal()">&times;</span>
         <div class="modal-content-wrapper">
             <img class="modal-img-large" id="modalImg">
             <div class="modal-info">
