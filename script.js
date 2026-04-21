@@ -300,7 +300,7 @@ const appSettings = JSON.parse(localStorage.getItem("animeSettings")) || {
   allowDupes: false,
   role: "All",
   topX: 20,
-  minPop: 100,
+  minPop: 1000,
   soundEnabled: true,
 };
 document.getElementById("guessMode").checked = appSettings.guessMode;
@@ -321,81 +321,54 @@ function saveSettings() {
   localStorage.setItem("animeSettings", JSON.stringify(appSettings));
 }
 
-let myAnimeList = JSON.parse(localStorage.getItem("myAnimeListV5"));
-if (!myAnimeList || myAnimeList.length < 60) {
-  const megaAnimePack = [
-    { id: 54112, title: "Alya Hides Her Feelings" },
-    { id: 16498, title: "Attack on Titan" },
-    { id: 34572, title: "Black Clover" },
-    { id: 47917, title: "Bocchi the Rock!" },
-    { id: 53446, title: "Campfire Cooking in Another World" },
-    { id: 37141, title: "Cells at Work!" },
-    { id: 44511, title: "Chainsaw Man" },
-    { id: 35507, title: "Classroom of the Elite" },
-    { id: 42310, title: "Cyberpunk: Edgerunners" },
-    { id: 52701, title: "Delicious in Dungeon" },
-    { id: 38000, title: "Demon Slayer" },
-    { id: 235, title: "Detective Conan" },
-    { id: 5081, title: "Bakemonogatari" },
-    { id: 30694, title: "Dragon Ball Super" },
-    { id: 6702, title: "Fairy Tail" },
-    { id: 10087, title: "Fate/Zero" },
-    { id: 52991, title: "Frieren" },
-    { id: 37349, title: "Goblin Slayer" },
-    { id: 2001, title: "Gurren Lagann" },
-    { id: 11617, title: "High School DxD" },
-    { id: 11061, title: "Hunter x Hunter" },
-    { id: 12189, title: "Hyouka" },
-    { id: 40748, title: "Jujutsu Kaisen" },
-    { id: 5680, title: "K-ON!" },
-    { id: 37999, title: "Kaguya-sama" },
-    { id: 52588, title: "Kaiju No. 8" },
-    { id: 34933, title: "Kakegurui" },
-    { id: 30831, title: "Konosuba" },
-    { id: 52211, title: "MASHLE" },
-    { id: 33206, title: "Miss Kobayashi's Dragon Maid" },
-    { id: 32182, title: "Mob Psycho 100" },
-    { id: 58426, title: "My Deer Friend Nokotan" },
-    { id: 48736, title: "My Dress-Up Darling" },
-    { id: 31964, title: "My Hero Academia" },
-    { id: 20, title: "Naruto" },
-    { id: 18897, title: "Nisekoi" },
-    { id: 19815, title: "No Game, No Life" },
-    { id: 52034, title: "OSHI NO KO" },
-    { id: 30276, title: "One-Punch Man" },
-    { id: 29803, title: "Overlord" },
-    { id: 527, title: "Pokemon" },
-    { id: 31240, title: "Re:Zero" },
-    { id: 44942, title: "Record of Ragnarok" },
-    { id: 35790, title: "Shield Hero" },
-    { id: 50265, title: "Spy x Family" },
-    { id: 11757, title: "Sword Art Online" },
-    { id: 37430, title: "That Time I Got Reincarnated as a Slime" },
-    { id: 54492, title: "The Apothecary Diaries" },
-    { id: 20785, title: "The Irregular at Magic High School" },
-    { id: 849, title: "The Melancholy of Haruhi Suzumiya" },
-    { id: 37779, title: "The Promised Neverland" },
-    { id: 23755, title: "The Seven Deadly Sins" },
-    { id: 43692, title: "The Way of the Househusband" },
-    { id: 3455, title: "To Love Ru" },
-    { id: 22319, title: "Tokyo Ghoul" },
-    { id: 42249, title: "Tokyo Revengers" },
-    { id: 10033, title: "Toriko" },
-    { id: 35249, title: "Umamusume" },
-    { id: 8861, title: "Yosuga no Sora" },
-    { id: 32281, title: "Your Name" },
-  ];
-  myAnimeList = megaAnimePack.map((anime) => ({
-    ...anime,
-    img: `https://via.placeholder.com/150x220/ffffff/ff4757?text=Loading...`,
-    active: true,
-  }));
-  localStorage.setItem("myAnimeListV5", JSON.stringify(myAnimeList));
+const defaultAnimeIds = [
+  54112, 16498, 34572, 47917, 53446, 37141, 44511, 35507, 42310, 52701, 38000,
+  235, 5081, 30694, 6702, 10087, 52991, 37349, 2001, 11617, 11061, 12189, 40748,
+  5680, 37999, 52588, 34933, 30831, 52211, 33206, 32182, 58426, 48736, 31964,
+  20, 18897, 19815, 52034, 30276, 29803, 527, 31240, 44942, 35790, 50265, 11757,
+  37430, 54492, 20785, 849, 37779, 23755, 43692, 3455, 22319, 42249, 10033,
+  35249, 8861, 32281, 54744, 2471, 39535, 33352,
+];
+
+let myAnimeList = JSON.parse(localStorage.getItem("myAnimeListV6")) || [];
+
+async function fetchDefaultAnimeList() {
+  if (myAnimeList.length >= defaultAnimeIds.length) return;
+
+  for (let id of defaultAnimeIds) {
+    if (!myAnimeList.some((anime) => anime.id === id)) {
+      try {
+        const res = await fetch(`https://api.jikan.moe/v4/anime/${id}`);
+        const result = await res.json();
+
+        if (result.data) {
+          myAnimeList.push({
+            id: id,
+            title: result.data.title_english || result.data.title,
+            img: result.data.images.jpg.image_url,
+            active: true,
+          });
+
+          localStorage.setItem("myAnimeListV6", JSON.stringify(myAnimeList));
+          sortAnimeList();
+          renderAnimeList();
+        }
+      } catch (error) {
+        console.error(`โหลด ID ${id} ไม่สำเร็จ`, error);
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+  }
 }
+
+fetchDefaultAnimeList();
 
 let drawnHistory = JSON.parse(sessionStorage.getItem("drawnHistory")) || [];
 let currentDrawnChar = null;
 let guessHistory = JSON.parse(sessionStorage.getItem("guessHistory")) || [];
+const characterCache =
+  JSON.parse(sessionStorage.getItem("animeCharCache")) || {};
 
 function sortAnimeList() {
   myAnimeList.sort((a, b) => a.title.localeCompare(b.title));
@@ -512,8 +485,6 @@ async function randomCharacter() {
   const activeAnimes = myAnimeList.filter((a) => a.active);
 
   if (activeAnimes.length === 0) return alert(t("needOneAnime"));
-  const randomAnime =
-    activeAnimes[Math.floor(Math.random() * activeAnimes.length)];
 
   button.disabled = true;
   button.innerText = t("searching");
@@ -531,88 +502,128 @@ async function randomCharacter() {
     .querySelectorAll("details")
     .forEach((detail) => detail.removeAttribute("open"));
 
-  try {
-    const response = await fetch(
-      `https://api.jikan.moe/v4/anime/${randomAnime.id}/characters`,
-    );
-    const result = await response.json();
-    let characters = result.data;
+  const shuffledAnimes = [...activeAnimes].sort(() => 0.5 - Math.random());
 
-    if (role !== "All") characters = characters.filter((c) => c.role === role);
-    characters = characters.filter((c) => (c.favorites || 0) >= minPop);
-    characters.sort((a, b) => b.favorites - a.favorites);
-    characters = characters.slice(0, topX);
+  let newDrawnChar = null;
+  let apiFetches = 0;
+  const maxApiFetches = 8;
 
-    let availableCharacters = characters;
-    if (!allowDupes)
-      availableCharacters = characters.filter(
-        (c) => !drawnHistory.includes(c.character.mal_id),
-      );
+  for (let anime of shuffledAnimes) {
+    try {
+      let characters = [];
 
-    if (availableCharacters.length === 0) {
-      nameElement.innerText = t("noNewChar");
-      animeElement.innerText = `${t("fromAnime")} ${randomAnime.title}`;
-      loader.style.display = "none";
-      if (!isLocked) {
-        button.disabled = false;
-        button.innerText = t("btnRandom");
-      }
-      if (!allowDupes)
-        document.getElementById("btnReset").style.display = "block";
-      return;
-    }
-
-    const randomPick =
-      availableCharacters[
-        Math.floor(Math.random() * availableCharacters.length)
-      ];
-    currentDrawnChar = {
-      id: randomPick.character.mal_id,
-      name: randomPick.character.name,
-      anime: randomAnime.title,
-      pop: randomPick.favorites || 0,
-      img: randomPick.character.images.jpg.image_url,
-    };
-
-    if (!allowDupes) {
-      drawnHistory.push(currentDrawnChar.id);
-      sessionStorage.setItem("drawnHistory", JSON.stringify(drawnHistory));
-      updateResetButton();
-    }
-
-    imgElement.onload = () => {
-      loader.style.display = "none";
-      imgElement.style.display = "block";
-      playRevealSound();
-
-      btnSelectFriend.style.display = "inline-block";
-
-      if (guessMode) {
-        nameElement.innerText = "????????";
-        animeElement.innerText = `${t("fromAnime")} ????????`;
-        btnReveal.style.display = "inline-block";
+      if (characterCache[anime.id]) {
+        characters = characterCache[anime.id];
       } else {
-        nameElement.innerText = currentDrawnChar.name;
-        animeElement.innerText = `${t("fromAnime")} ${currentDrawnChar.anime}`;
-        popElement.style.display = "inline-block";
-        popElement.innerText = `${t("popularity")} ${currentDrawnChar.pop.toLocaleString()} ${t("people")}`;
-        hintElement.style.display = "block";
+        if (apiFetches >= maxApiFetches) continue;
+
+        if (apiFetches > 0) await new Promise((r) => setTimeout(r, 400));
+        const response = await fetch(
+          `https://api.jikan.moe/v4/anime/${anime.id}/characters`,
+        );
+        if (!response.ok) continue;
+
+        const result = await response.json();
+        characters = result.data || [];
+
+        characterCache[anime.id] = characters;
+        sessionStorage.setItem(
+          "animeCharCache",
+          JSON.stringify(characterCache),
+        );
+        apiFetches++;
       }
 
-      if (!isLocked) {
-        button.disabled = false;
-        button.innerText = t("btnRandomAgain");
+      let filteredChars = [...characters];
+
+      if (role !== "All") {
+        filteredChars = filteredChars.filter((c) => c.role === role);
       }
-    };
-    imgElement.src = currentDrawnChar.img;
-  } catch (error) {
+
+      filteredChars = filteredChars.filter((c) => (c.favorites || 0) >= minPop);
+
+      filteredChars.sort((a, b) => (b.favorites || 0) - (a.favorites || 0));
+      filteredChars = filteredChars.slice(0, topX);
+
+      if (!allowDupes) {
+        filteredChars = filteredChars.filter(
+          (c) => !drawnHistory.includes(c.character.mal_id),
+        );
+      }
+
+      if (filteredChars.length === 0) continue;
+
+      const randomPick =
+        filteredChars[Math.floor(Math.random() * filteredChars.length)];
+      newDrawnChar = {
+        id: randomPick.character.mal_id,
+        name: randomPick.character.name,
+        anime: anime.title,
+        pop: randomPick.favorites || 0,
+        img: randomPick.character.images.jpg.image_url,
+      };
+
+      break;
+    } catch (error) {
+      console.warn(`Skip: ${anime.title}`, error);
+    }
+  }
+
+  if (!newDrawnChar) {
+    nameElement.innerText = t("noNewChar");
+    loader.style.display = "none";
+    if (!isLocked) {
+      button.disabled = false;
+      button.innerText = t("btnRandom");
+    }
+    if (!allowDupes)
+      document.getElementById("btnReset").style.display = "block";
+    return;
+  }
+
+  currentDrawnChar = newDrawnChar;
+
+  if (!allowDupes) {
+    drawnHistory.push(currentDrawnChar.id);
+    sessionStorage.setItem("drawnHistory", JSON.stringify(drawnHistory));
+    updateResetButton();
+  }
+
+  imgElement.onload = () => {
+    loader.style.display = "none";
+    imgElement.style.display = "block";
+    playRevealSound();
+
+    btnSelectFriend.style.display = "inline-block";
+
+    if (guessMode) {
+      nameElement.innerText = "????????";
+      animeElement.innerText = `${t("fromAnime")} ????????`;
+      btnReveal.style.display = "inline-block";
+    } else {
+      nameElement.innerText = currentDrawnChar.name;
+      animeElement.innerText = `${t("fromAnime")} ${currentDrawnChar.anime}`;
+      popElement.style.display = "inline-block";
+      popElement.innerText = `${t("popularity")} ${currentDrawnChar.pop.toLocaleString()} ${t("people")}`;
+      hintElement.style.display = "block";
+    }
+
+    if (!isLocked) {
+      button.disabled = false;
+      button.innerText = t("btnRandomAgain");
+    }
+  };
+
+  imgElement.onerror = () => {
     nameElement.innerText = t("errorMsg");
     loader.style.display = "none";
     if (!isLocked) {
       button.disabled = false;
       button.innerText = t("btnRandom");
     }
-  }
+  };
+
+  imgElement.src = currentDrawnChar.img;
 }
 
 function revealCharacter() {
@@ -687,11 +698,9 @@ function renderHistory() {
     return;
   }
 
-  // Reverse เพื่อให้ข้อมูลใหม่ล่าสุดขึ้นก่อน
   [...guessHistory].reverse().forEach((item) => {
     const div = document.createElement("div");
 
-    // กำหนดคลาสและข้อความตามสถานะ
     const statusClass = item.isCorrect ? "correct" : "wrong";
     const statusTextTh = item.isCorrect ? "✅ ทายถูก" : "❌ ข้าม";
     const statusTextEn = item.isCorrect ? "✅ Correct" : "❌ Skipped";
