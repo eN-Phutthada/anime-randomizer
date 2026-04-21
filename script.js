@@ -1,6 +1,6 @@
 // --- Language System (Translations & AI Disclaimer) ---
 const translations = {
-  title: { th: "✨ ฉันคือใครในอนิเมะ? ✨", en: "✨ Who am I in Anime? ✨" },
+  title: { th: "✨ ฉันคือใครในอนิเมะ! ✨", en: "✨ Who am I in Anime! ✨" },
   clickHint: {
     th: "🔍 กดที่รูปเพื่อดูแบบเต็มจอ",
     en: "🔍 Click image to view full screen",
@@ -57,8 +57,8 @@ const translations = {
     th: "ให้เพื่อนถือโทรศัพท์แนบหน้าผาก<br>(หันหน้าจอมาหาเรา)<br>แล้วกดปุ่มด้านล่างเพื่อเริ่มทาย!",
     en: "Have them hold it on their forehead facing you.<br>Then tap below to start!",
   },
-  fhSurrender: { th: "🏳️ ข้าม/ยอมแพ้", en: "🏳️ Skip/Surrender" },
-  fhCorrect: { th: "🎉 ทายถูก!", en: "🎉 Correct!" },
+  fhSurrender: { th: "🏳️ ใครอะ?", en: "🏳️ Who is it?" },
+  fhCorrect: { th: "🎉 ก็เก่งอะ", en: "🎉 Great job!" },
   btnShowHint: { th: "💡 ขอคำใบ้ (Hint)", en: "💡 Show Hint" },
 
   // Dynamic Texts
@@ -168,7 +168,7 @@ function updateLanguageUI() {
   }
 
   document.getElementById("langToggle").innerText =
-    currentLang === "th" ? "EN" : "TH";
+    currentLang === "th" ? "🇺🇸" : "🇹🇭";
 }
 
 function toggleLanguage() {
