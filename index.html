@@ -19,7 +19,7 @@
         <button id="themeToggle" class="icon-btn" onclick="toggleTheme()" title="สลับโหมด มืด/สว่าง">🌞</button>
     </div>
 
-    <div class="container">
+    <div class="container" id="mainContainer">
         <h1 class="anime-title" id="text_title">✨ ฉันคือใครในอนิเมะ? ✨</h1>
 
         <div id="result" class="result-card">
@@ -30,8 +30,12 @@
             <h2 id="charName">พร้อมแล้วสุ่มเลย!</h2>
             <p id="animeName"></p>
             <p id="charPop" class="popularity-stat" style="display: none;"></p>
-            <button id="btnReveal" class="btn-reveal" onclick="revealCharacter()" style="display: none;">👁️
-                ดูเฉลย</button>
+            <div class="action-buttons-group">
+                <button id="btnReveal" class="btn-reveal" onclick="revealCharacter()" style="display: none;">👁️
+                    ดูเฉลย</button>
+                <button id="btnSelectFriend" class="btn-select-friend" onclick="prepareForeheadGame()"
+                    style="display: none;">🎯 เลือกตัวนี้ให้เพื่อน!</button>
+            </div>
         </div>
 
         <div class="main-buttons">
@@ -125,6 +129,51 @@
                 <div class="modal-pop-badge" id="modalPop"></div>
             </div>
         </div>
+    </div>
+
+    <div id="foreheadGameScreen" class="forehead-screen" style="display: none;">
+
+        <div id="fhSetupStep" class="container"
+            style="margin-top: 0; display: block; border-color: var(--primary-color);">
+            <div class="fh-icon-bounce">📱</div>
+            <h1 class="anime-title" id="text_fhSetupTitle" style="font-size: 28px;">ยื่นมือถือให้เพื่อนเลย!</h1>
+            <p id="text_fhSetupDesc" style="color: var(--text-main); font-size: 18px; margin-bottom: 20px;">
+                ให้เพื่อนถือโทรศัพท์แนบหน้าผาก (หันหน้าจอมาหาเรา)<br>แล้วกดปุ่มด้านล่างเพื่อเริ่มทาย!
+            </p>
+
+            <div class="score-board">
+                <h3 id="fhScoreText">🏆 สถิติ: ✅ ถูก: 0 | ❌ ข้าม: 0</h3>
+            </div>
+
+            <button class="btn-main" onclick="startForeheadGame()" style="margin-top: 20px; font-size: 24px;">▶️
+                เริ่มเกม!</button>
+            <button class="btn-reset" onclick="cancelForeheadGame()" style="display:block; margin-top:15px;">❌
+                ยกเลิก</button>
+        </div>
+
+        <div id="fhPlayStep" class="modal-content-wrapper"
+            style="display: none; background: var(--modal-bg); padding: 30px 20px; border-radius: 20px; border: 3px solid var(--border-color); box-shadow: 0 15px 40px var(--shadow-color);">
+            <img class="modal-img-large" id="fhImg" src="">
+            <div class="modal-info">
+                <h2 id="fhName" style="font-size: 36px;"></h2>
+                <p id="fhAnime" style="font-size: 20px; font-weight: bold;"></p>
+            </div>
+
+            <div id="fhHintSection" class="fh-hint-box">
+                <button id="btnShowHint" class="btn-reveal" onclick="fetchAndShowHint()"
+                    style="display:none; width: 100%; max-width: 300px; margin: 15px auto;">💡 ขอคำใบ้ (Hint)</button>
+                <div id="fhHintLoader" class="loader"
+                    style="display:none; width: 35px; height: 35px; margin: 15px auto;"></div>
+                <p id="fhHintText" class="hint-text-box" style="display: none;"></p>
+            </div>
+
+            <div class="fh-actions">
+                <button class="fh-btn-surrender" id="text_fhSurrender" onclick="endForeheadGame(false)">🏳️
+                    ยอมแพ้/ข้าม</button>
+                <button class="fh-btn-correct" id="text_fhCorrect" onclick="endForeheadGame(true)">🎉 ทายถูก!</button>
+            </div>
+        </div>
+
     </div>
 
     <script src="script.js"></script>

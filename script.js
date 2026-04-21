@@ -7,6 +7,10 @@ const translations = {
   },
   charNameDefault: { th: "พร้อมแล้วสุ่มเลย!", en: "Ready, set, roll!" },
   btnReveal: { th: "👁️ ดูเฉลย", en: "👁️ Reveal" },
+  btnSelectFriend: {
+    th: "🎯 เลือกตัวนี้ให้เพื่อน!",
+    en: "🎯 Pick this for friend!",
+  },
   btnRandom: { th: "🎲 สุ่มตัวละคร!", en: "🎲 Roll Character!" },
   btnRandomAgain: { th: "🎲 สุ่มต่อ!", en: "🎲 Roll Again!" },
   btnReset: { th: "🔄 ล้างความจำการสุ่ม", en: "🔄 Clear Roll History" },
@@ -43,6 +47,19 @@ const translations = {
   btnSelectAll: { th: "✅ เลือกหมด", en: "✅ Select All" },
   btnDeselectAll: { th: "❌ เอาออก", en: "❌ Deselect All" },
   lockedBtn: { th: "🔒 ปุ่มถูกล็อก", en: "🔒 Locked" },
+
+  // Forehead Game Mode
+  fhSetupTitle: {
+    th: "ยื่นมือถือให้เพื่อนเลย!",
+    en: "Hand the phone to your friend!",
+  },
+  fhSetupDesc: {
+    th: "ให้เพื่อนถือโทรศัพท์แนบหน้าผาก<br>(หันหน้าจอมาหาเรา)<br>แล้วกดปุ่มด้านล่างเพื่อเริ่มทาย!",
+    en: "Have them hold it on their forehead facing you.<br>Then tap below to start!",
+  },
+  fhSurrender: { th: "🏳️ ข้าม/ยอมแพ้", en: "🏳️ Skip/Surrender" },
+  fhCorrect: { th: "🎉 ทายถูก!", en: "🎉 Correct!" },
+  btnShowHint: { th: "💡 ขอคำใบ้ (Hint)", en: "💡 Show Hint" },
 
   // Dynamic Texts
   castingSpell: { th: "กำลังร่ายเวทมนตร์... ✨", en: "Casting spell... ✨" },
@@ -93,6 +110,7 @@ function updateLanguageUI() {
   }
 
   document.getElementById("btnReveal").innerText = t("btnReveal");
+  document.getElementById("btnSelectFriend").innerText = t("btnSelectFriend");
 
   if (isLocked) {
     document.getElementById("btnRandom").innerText = t("lockedBtn");
@@ -122,7 +140,14 @@ function updateLanguageUI() {
   document.getElementById("searchAnime").placeholder = t("searchAnime");
   document.getElementById("btnSelectAll").innerText = t("btnSelectAll");
   document.getElementById("btnDeselectAll").innerText = t("btnDeselectAll");
-  document.getElementById("text_aiDisclaimer").innerText = t("aiDisclaimer");
+
+  // Forehead Mode UI
+  document.getElementById("text_fhSetupTitle").innerText = t("fhSetupTitle");
+  document.getElementById("text_fhSetupDesc").innerHTML = t("fhSetupDesc");
+  document.getElementById("text_fhSurrender").innerText = t("fhSurrender");
+  document.getElementById("text_fhCorrect").innerText = t("fhCorrect");
+  document.getElementById("btnShowHint").innerText = t("btnShowHint");
+  updateScoreUI();
 
   if (
     currentDrawnChar &&
@@ -155,7 +180,6 @@ function toggleLanguage() {
 
 // --- Lock Button System ---
 let isLocked = false;
-
 function toggleLock() {
   playClickSound();
   isLocked = !isLocked;
@@ -165,7 +189,6 @@ function toggleLock() {
 function updateLockUI() {
   const btn = document.getElementById("btnRandom");
   const lockBtn = document.getElementById("btnLock");
-
   if (isLocked) {
     btn.disabled = true;
     btn.innerText = t("lockedBtn");
@@ -174,7 +197,6 @@ function updateLockUI() {
   } else {
     lockBtn.innerText = "🔓";
     lockBtn.style.borderColor = "var(--border-color)";
-
     if (
       btn.innerText !== t("searching") &&
       btn.innerText !== t("castingSpell")
@@ -187,7 +209,6 @@ function updateLockUI() {
 
 // --- Sound System ---
 let audioCtx;
-
 function initAudio() {
   if (!audioCtx)
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -215,7 +236,6 @@ function playTone(freq, type, duration, vol) {
 function playClickSound() {
   playTone(600, "sine", 0.1, 0.03);
 }
-
 function playLoadingSound() {
   if (!appSettings.soundEnabled) return;
   initAudio();
@@ -242,7 +262,6 @@ function playRevealSound() {
 
 // --- Theme System ---
 const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)");
-
 function applyTheme(theme) {
   if (theme === "dark") {
     document.body.classList.add("dark-mode");
@@ -254,28 +273,18 @@ function applyTheme(theme) {
     document.getElementById("themeToggle").innerText = "🌞";
   }
 }
-
 const savedTheme = localStorage.getItem("animeTheme");
-if (savedTheme) {
-  applyTheme(savedTheme);
-} else {
-  applyTheme(prefersDarkScheme.matches ? "dark" : "light");
-}
+if (savedTheme) applyTheme(savedTheme);
+else applyTheme(prefersDarkScheme.matches ? "dark" : "light");
 
 function toggleTheme() {
   playClickSound();
-  const isCurrentlyLight = document.body.classList.contains("light-mode");
-  const newTheme = isCurrentlyLight ? "dark" : "light";
-
+  const newTheme = document.body.classList.contains("light-mode")
+    ? "dark"
+    : "light";
   applyTheme(newTheme);
   localStorage.setItem("animeTheme", newTheme);
 }
-
-prefersDarkScheme.addEventListener("change", (e) => {
-  if (!localStorage.getItem("animeTheme")) {
-    applyTheme(e.matches ? "dark" : "light");
-  }
-});
 
 // --- Settings & Variables ---
 const appSettings = JSON.parse(localStorage.getItem("animeSettings")) || {
@@ -286,7 +295,6 @@ const appSettings = JSON.parse(localStorage.getItem("animeSettings")) || {
   minPop: 100,
   soundEnabled: true,
 };
-
 document.getElementById("guessMode").checked = appSettings.guessMode;
 document.getElementById("allowDupes").checked = appSettings.allowDupes;
 document.getElementById("soundEnabled").checked = appSettings.soundEnabled;
@@ -383,7 +391,6 @@ let currentDrawnChar = null;
 function sortAnimeList() {
   myAnimeList.sort((a, b) => a.title.localeCompare(b.title));
 }
-
 async function syncMissingImages() {
   for (let i = 0; i < myAnimeList.length; i++) {
     if (myAnimeList[i].img.includes("Loading...")) {
@@ -407,7 +414,6 @@ function renderAnimeList() {
   const selectorDiv = document.getElementById("animeSelector");
   const searchWord = document.getElementById("searchAnime").value.toLowerCase();
   selectorDiv.innerHTML = "";
-
   myAnimeList.forEach((anime, index) => {
     if (searchWord && !anime.title.toLowerCase().includes(searchWord)) return;
     const card = document.createElement("div");
@@ -420,19 +426,17 @@ function renderAnimeList() {
       renderAnimeList();
     };
     card.innerHTML = `
-            <img src="${anime.img}" alt="${anime.title}" loading="lazy">
-            <div class="card-title">${anime.title}</div>
-            <div class="btn-remove" onclick="removeAnime(${index}); event.stopPropagation();" title="Remove">✕</div>
-        `;
+        <img src="${anime.img}" alt="${anime.title}" loading="lazy">
+        <div class="card-title">${anime.title}</div>
+        <div class="btn-remove" onclick="removeAnime(${index}); event.stopPropagation();" title="Remove">✕</div>
+      `;
     selectorDiv.appendChild(card);
   });
   updateResetButton();
 }
-
 function filterAnime() {
   renderAnimeList();
 }
-
 function toggleAllAnime(state) {
   myAnimeList.forEach((anime) => (anime.active = state));
   localStorage.setItem("myAnimeListV5", JSON.stringify(myAnimeList));
@@ -472,7 +476,6 @@ async function addAnime() {
     input.value = "";
   }
 }
-
 function removeAnime(index) {
   playClickSound();
   if (confirm(`${t("removeConfirm")} ${myAnimeList[index].title}?`)) {
@@ -483,7 +486,7 @@ function removeAnime(index) {
 }
 
 async function randomCharacter() {
-  if (isLocked) return; // Prevent run if locked
+  if (isLocked) return;
   playLoadingSound();
 
   const nameElement = document.getElementById("charName");
@@ -492,6 +495,7 @@ async function randomCharacter() {
   const loader = document.getElementById("loader");
   const button = document.getElementById("btnRandom");
   const btnReveal = document.getElementById("btnReveal");
+  const btnSelectFriend = document.getElementById("btnSelectFriend");
   const popElement = document.getElementById("charPop");
   const hintElement = document.getElementById("clickHint");
 
@@ -499,7 +503,6 @@ async function randomCharacter() {
   const activeAnimes = myAnimeList.filter((a) => a.active);
 
   if (activeAnimes.length === 0) return alert(t("needOneAnime"));
-
   const randomAnime =
     activeAnimes[Math.floor(Math.random() * activeAnimes.length)];
 
@@ -513,6 +516,7 @@ async function randomCharacter() {
   popElement.style.display = "none";
   hintElement.style.display = "none";
   btnReveal.style.display = "none";
+  btnSelectFriend.style.display = "none";
 
   document
     .querySelectorAll("details")
@@ -531,11 +535,10 @@ async function randomCharacter() {
     characters = characters.slice(0, topX);
 
     let availableCharacters = characters;
-    if (!allowDupes) {
+    if (!allowDupes)
       availableCharacters = characters.filter(
         (c) => !drawnHistory.includes(c.character.mal_id),
       );
-    }
 
     if (availableCharacters.length === 0) {
       nameElement.innerText = t("noNewChar");
@@ -555,6 +558,7 @@ async function randomCharacter() {
         Math.floor(Math.random() * availableCharacters.length)
       ];
     currentDrawnChar = {
+      id: randomPick.character.mal_id,
       name: randomPick.character.name,
       anime: randomAnime.title,
       pop: randomPick.favorites || 0,
@@ -562,7 +566,7 @@ async function randomCharacter() {
     };
 
     if (!allowDupes) {
-      drawnHistory.push(randomPick.character.mal_id);
+      drawnHistory.push(currentDrawnChar.id);
       sessionStorage.setItem("drawnHistory", JSON.stringify(drawnHistory));
       updateResetButton();
     }
@@ -570,8 +574,9 @@ async function randomCharacter() {
     imgElement.onload = () => {
       loader.style.display = "none";
       imgElement.style.display = "block";
-
       playRevealSound();
+
+      btnSelectFriend.style.display = "inline-block";
 
       if (guessMode) {
         nameElement.innerText = "????????";
@@ -610,7 +615,6 @@ function revealCharacter() {
     `${t("fromAnime")} ${currentDrawnChar.anime}`;
   document.getElementById("btnReveal").style.display = "none";
   document.getElementById("clickHint").style.display = "block";
-
   const popElement = document.getElementById("charPop");
   popElement.style.display = "inline-block";
   popElement.innerText = `${t("popularity")} ${currentDrawnChar.pop.toLocaleString()} ${t("people")}`;
@@ -619,18 +623,17 @@ function revealCharacter() {
 function resetHistory() {
   playClickSound();
   drawnHistory = [];
+  fhScore = { correct: 0, skip: 0 };
+  updateScoreUI();
   sessionStorage.removeItem("drawnHistory");
   updateResetButton();
   alert(t("clearSuccess"));
 }
-
 function updateResetButton() {
-  if (!appSettings.allowDupes) {
+  if (!appSettings.allowDupes)
     document.getElementById("btnReset").style.display =
       drawnHistory.length > 0 ? "block" : "none";
-  } else {
-    document.getElementById("btnReset").style.display = "none";
-  }
+  else document.getElementById("btnReset").style.display = "none";
 }
 
 const modal = document.getElementById("imageModal");
@@ -642,17 +645,12 @@ function openModal() {
     document.getElementById("charName").innerText;
   document.getElementById("modalAnime").innerText =
     document.getElementById("animeName").innerText;
-
   const charPop = document.getElementById("charPop");
   const modalPop = document.getElementById("modalPop");
-
   if (charPop.style.display !== "none") {
     modalPop.innerText = charPop.innerText;
     modalPop.style.display = "inline-block";
-  } else {
-    modalPop.style.display = "none";
-  }
-
+  } else modalPop.style.display = "none";
   modal.style.display = "flex";
 }
 function closeModal() {
@@ -660,8 +658,139 @@ function closeModal() {
   modal.style.display = "none";
 }
 
+let hintTimer;
+let fhScore = { correct: 0, skip: 0 };
+
+function updateScoreUI() {
+  const thText = `🏆 สถิติ: ✅ ถูก: ${fhScore.correct} | ❌ ข้าม: ${fhScore.skip}`;
+  const enText = `🏆 Score: ✅ Correct: ${fhScore.correct} | ❌ Skip: ${fhScore.skip}`;
+  document.getElementById("fhScoreText").innerText =
+    currentLang === "th" ? thText : enText;
+}
+
+function prepareForeheadGame() {
+  playClickSound();
+  document.getElementById("mainContainer").style.display = "none";
+  document.getElementById("foreheadGameScreen").style.display = "flex";
+  document.getElementById("fhSetupStep").style.display = "block";
+  document.getElementById("fhPlayStep").style.display = "none";
+
+  // Reset Hint
+  document.getElementById("fhHintText").style.display = "none";
+  document.getElementById("fhHintText").innerText = "";
+  document.getElementById("btnShowHint").style.display = "none";
+}
+
+function cancelForeheadGame() {
+  playClickSound();
+  clearTimeout(hintTimer);
+  document.getElementById("foreheadGameScreen").style.display = "none";
+  document.getElementById("mainContainer").style.display = "";
+}
+
+function startForeheadGame() {
+  playClickSound();
+
+  try {
+    if (document.documentElement.requestFullscreen)
+      document.documentElement.requestFullscreen();
+  } catch (e) {}
+
+  document.getElementById("fhSetupStep").style.display = "none";
+  document.getElementById("fhPlayStep").style.display = "block";
+
+  // Set Data (ใช้ดีไซน์ Modal)
+  document.getElementById("fhImg").src = currentDrawnChar.img;
+  document.getElementById("fhName").innerText = currentDrawnChar.name;
+  document.getElementById("fhAnime").innerText =
+    `${t("fromAnime")} ${currentDrawnChar.anime}`;
+
+  // Show hint button after 30 seconds
+  clearTimeout(hintTimer);
+  hintTimer = setTimeout(() => {
+    document.getElementById("btnShowHint").style.display = "block";
+    playTone(800, "sine", 0.2, 0.05);
+  }, 30000);
+}
+
+async function fetchAndShowHint() {
+  playClickSound();
+  document.getElementById("btnShowHint").style.display = "none";
+  document.getElementById("fhHintLoader").style.display = "block";
+  const hintTextBox = document.getElementById("fhHintText");
+
+  try {
+    const res = await fetch(
+      `https://api.jikan.moe/v4/characters/${currentDrawnChar.id}/full`,
+    );
+    const data = await res.json();
+
+    let aboutText = data.data.about;
+    if (!aboutText) throw new Error("No about info");
+
+    let shortHint = aboutText.split("\n")[0].replace(/\\/g, "");
+    if (shortHint.length > 250) shortHint = shortHint.substring(0, 250) + "...";
+
+    if (currentLang === "th") {
+      try {
+        const tRes = await fetch(
+          `https://api.mymemory.translated.net/get?q=${encodeURIComponent(shortHint)}&langpair=en|th`,
+        );
+        const tData = await tRes.json();
+        if (tData && tData.responseData && tData.responseData.translatedText) {
+          shortHint = tData.responseData.translatedText;
+        }
+      } catch (e) {
+        console.log("Translation failed");
+      }
+    }
+
+    hintTextBox.innerText = shortHint;
+    document.getElementById("fhHintLoader").style.display = "none";
+    hintTextBox.style.display = "block";
+    hintTextBox.style.animation = "bounceIn 0.3s";
+  } catch (error) {
+    document.getElementById("fhHintLoader").style.display = "none";
+    hintTextBox.innerText =
+      currentLang === "th"
+        ? "❌ ไม่มีข้อมูลคำใบ้ของตัวละครนี้"
+        : "❌ No hint available.";
+    hintTextBox.style.display = "block";
+  }
+}
+
+function endForeheadGame(isCorrect) {
+  if (isCorrect) {
+    playRevealSound();
+    fhScore.correct++;
+    alert(
+      currentLang === "th"
+        ? "สุดยอด! ทายถูกด้วย 🎉"
+        : "Awesome! You guessed it right 🎉",
+    );
+  } else {
+    playTone(300, "sawtooth", 0.5, 0.05);
+    fhScore.skip++;
+    alert(
+      currentLang === "th"
+        ? "ไม่เป็นไรนะ ไว้ทายใหม่! 😅"
+        : "Nice try! Let's roll again! 😅",
+    );
+  }
+
+  updateScoreUI();
+
+  try {
+    if (document.exitFullscreen) document.exitFullscreen();
+  } catch (e) {}
+
+  clearTimeout(hintTimer);
+  document.getElementById("foreheadGameScreen").style.display = "none";
+  document.getElementById("mainContainer").style.display = "";
+}
+
 // Initial Calls
 sortAnimeList();
 renderAnimeList();
 syncMissingImages();
-updateLanguageUI(); // Update UI on first load based on saved preference
+updateLanguageUI();

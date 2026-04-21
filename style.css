@@ -43,8 +43,6 @@ body {
     color: var(--text-main);
     min-height: 100vh;
     display: flex;
-    justify-content: center;
-    align-items: flex-start;
     flex-direction: column;
     align-items: center;
     padding: 30px 15px 0px 15px;
@@ -160,18 +158,42 @@ p#animeName {
     font-size: 13px;
 }
 
-.btn-reveal {
+.action-buttons-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
     margin-top: 15px;
+    align-items: center;
+}
+
+.btn-reveal,
+.btn-select-friend {
     padding: 10px 20px;
     font-size: 18px;
     font-family: 'Itim', cursive;
-    background: var(--secondary-color);
     color: #fff;
     border: none;
     border-radius: 15px;
     cursor: pointer;
+    width: 100%;
+    max-width: 250px;
+}
+
+.btn-reveal {
+    background: var(--secondary-color);
     box-shadow: 0 4px 10px rgba(46, 213, 115, 0.4);
     animation: pulse 1.5s infinite;
+}
+
+.btn-select-friend {
+    background: #0984e3;
+    box-shadow: 0 4px 10px rgba(9, 132, 227, 0.4);
+    transition: 0.2s;
+}
+
+.btn-select-friend:hover {
+    background: #74b9ff;
+    transform: scale(1.05);
 }
 
 .main-buttons {
@@ -506,6 +528,7 @@ input:checked+.slider:before {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    color: var(--text-main);
 }
 
 .anime-card:not(.active) {
@@ -616,19 +639,21 @@ input:checked+.slider:before {
     width: 90%;
     max-width: 650px;
     animation: bounceIn 0.3s;
+    position: relative;
 }
 
 .modal-img-large {
     width: 100%;
-    max-height: 75vh;
+    max-height: 45vh;
     object-fit: contain;
     border-radius: 15px;
     border: 3px solid var(--primary-color);
     background: var(--container-bg);
+    box-shadow: 0 10px 30px var(--shadow-color);
 }
 
 .modal-info {
-    margin-top: 20px;
+    margin-top: 15px;
 }
 
 .modal-info h2 {
@@ -693,4 +718,93 @@ input:checked+.slider:before {
 
 .credits-footer strong {
     color: var(--text-main);
+}
+
+.forehead-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: var(--bg-gradient);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.fh-icon-bounce {
+    font-size: 80px;
+    animation: pulse 2s infinite;
+    margin-bottom: 10px;
+}
+
+.score-board {
+    background: var(--card-bg);
+    border: 2px dashed var(--secondary-color);
+    padding: 10px;
+    border-radius: 15px;
+    display: inline-block;
+    margin-bottom: 10px;
+}
+
+.score-board h3 {
+    color: var(--text-main);
+    margin: 0;
+    font-family: 'Itim', cursive;
+}
+
+.hint-text-box {
+    background: var(--input-bg);
+    padding: 15px;
+    border-radius: 15px;
+    font-size: 16px;
+    color: var(--text-main);
+    border: 2px dashed var(--primary-color);
+    line-height: 1.5;
+    text-align: left;
+    max-height: 150px;
+    overflow-y: auto;
+    margin-top: 10px;
+}
+
+.fh-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 25px;
+    justify-content: center;
+}
+
+.fh-btn-correct,
+.fh-btn-surrender {
+    flex: 1;
+    max-width: 200px;
+    padding: 15px;
+    font-size: 20px;
+    font-family: 'Itim', cursive;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+    font-weight: bold;
+    color: white;
+    transition: 0.2s;
+}
+
+.fh-btn-correct {
+    background: #2ecc71;
+    box-shadow: 0 5px 0 #27ae60;
+}
+
+.fh-btn-surrender {
+    background: #e74c3c;
+    box-shadow: 0 5px 0 #c0392b;
+}
+
+.fh-btn-correct:active,
+.fh-btn-surrender:active {
+    transform: translateY(5px);
+    box-shadow: none;
 }
