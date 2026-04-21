@@ -61,6 +61,13 @@ const translations = {
   fhCorrect: { th: "🎉 ก็เก่งอะ", en: "🎉 Great job!" },
   btnShowHint: { th: "💡 ขอคำใบ้ (Hint)", en: "💡 Show Hint" },
 
+  // History
+  historySummary: { th: "📜 ประวัติการทาย", en: "📜 Guess History" },
+  emptyHistory: {
+    th: "ยังไม่มีประวัติการทาย...",
+    en: "No guess history yet...",
+  },
+
   // Dynamic Texts
   castingSpell: { th: "กำลังร่ายเวทมนตร์... ✨", en: "Casting spell... ✨" },
   searching: { th: "กำลังค้นหา...", en: "Searching..." },
@@ -147,7 +154,11 @@ function updateLanguageUI() {
   document.getElementById("text_fhSurrender").innerText = t("fhSurrender");
   document.getElementById("text_fhCorrect").innerText = t("fhCorrect");
   document.getElementById("btnShowHint").innerText = t("btnShowHint");
-  updateScoreUI();
+
+  // History UI
+  const historySummaryObj = document.getElementById("text_historySummary");
+  if (historySummaryObj) historySummaryObj.innerText = t("historySummary");
+  renderHistory();
 
   if (
     currentDrawnChar &&
@@ -166,9 +177,6 @@ function updateLanguageUI() {
         `${t("fromAnime")} ????????`;
     }
   }
-
-  document.getElementById("langToggle").innerText =
-    currentLang === "th" ? "🇺🇸" : "🇹🇭";
 }
 
 function toggleLanguage() {
@@ -387,6 +395,7 @@ if (!myAnimeList || myAnimeList.length < 60) {
 
 let drawnHistory = JSON.parse(sessionStorage.getItem("drawnHistory")) || [];
 let currentDrawnChar = null;
+let guessHistory = JSON.parse(sessionStorage.getItem("guessHistory")) || [];
 
 function sortAnimeList() {
   myAnimeList.sort((a, b) => a.title.localeCompare(b.title));
@@ -623,12 +632,16 @@ function revealCharacter() {
 function resetHistory() {
   playClickSound();
   drawnHistory = [];
-  fhScore = { correct: 0, skip: 0 };
-  updateScoreUI();
+  guessHistory = [];
+
   sessionStorage.removeItem("drawnHistory");
+  sessionStorage.removeItem("guessHistory");
+
   updateResetButton();
+  renderHistory();
   alert(t("clearSuccess"));
 }
+
 function updateResetButton() {
   if (!appSettings.allowDupes)
     document.getElementById("btnReset").style.display =
@@ -659,13 +672,42 @@ function closeModal() {
 }
 
 let hintTimer;
-let fhScore = { correct: 0, skip: 0 };
 
-function updateScoreUI() {
-  const thText = `🏆 สถิติ: ✅ ถูก: ${fhScore.correct} | ❌ ข้าม: ${fhScore.skip}`;
-  const enText = `🏆 Score: ✅ Correct: ${fhScore.correct} | ❌ Skip: ${fhScore.skip}`;
-  document.getElementById("fhScoreText").innerText =
-    currentLang === "th" ? thText : enText;
+function renderHistory() {
+  const list = document.getElementById("historyList");
+  list.innerHTML = "";
+
+  if (guessHistory.length === 0) {
+    list.innerHTML = `
+            <div class="history-empty">
+                <span class="history-empty-icon">📭</span>
+                ${t("emptyHistory")}
+            </div>
+        `;
+    return;
+  }
+
+  // Reverse เพื่อให้ข้อมูลใหม่ล่าสุดขึ้นก่อน
+  [...guessHistory].reverse().forEach((item) => {
+    const div = document.createElement("div");
+
+    // กำหนดคลาสและข้อความตามสถานะ
+    const statusClass = item.isCorrect ? "correct" : "wrong";
+    const statusTextTh = item.isCorrect ? "✅ ทายถูก" : "❌ ข้าม";
+    const statusTextEn = item.isCorrect ? "✅ Correct" : "❌ Skipped";
+    const displayStatus = currentLang === "th" ? statusTextTh : statusTextEn;
+
+    div.className = `history-item ${statusClass}`;
+    div.innerHTML = `
+            <img src="${item.img}" alt="character image" loading="lazy">
+            <div class="history-item-info">
+                <h4>${item.name}</h4>
+                <p>${item.anime}</p>
+            </div>
+            <div class="history-status">${displayStatus}</div>
+        `;
+    list.appendChild(div);
+  });
 }
 
 function prepareForeheadGame() {
@@ -699,7 +741,7 @@ function startForeheadGame() {
   document.getElementById("fhSetupStep").style.display = "none";
   document.getElementById("fhPlayStep").style.display = "block";
 
-  // Set Data (ใช้ดีไซน์ Modal)
+  // Set Data
   document.getElementById("fhImg").src = currentDrawnChar.img;
   document.getElementById("fhName").innerText = currentDrawnChar.name;
   document.getElementById("fhAnime").innerText =
@@ -762,7 +804,6 @@ async function fetchAndShowHint() {
 function endForeheadGame(isCorrect) {
   if (isCorrect) {
     playRevealSound();
-    fhScore.correct++;
     alert(
       currentLang === "th"
         ? "สุดยอด! ทายถูกด้วย 🎉"
@@ -770,7 +811,6 @@ function endForeheadGame(isCorrect) {
     );
   } else {
     playTone(300, "sawtooth", 0.5, 0.05);
-    fhScore.skip++;
     alert(
       currentLang === "th"
         ? "ไม่เป็นไรนะ ไว้ทายใหม่! 😅"
@@ -778,7 +818,14 @@ function endForeheadGame(isCorrect) {
     );
   }
 
-  updateScoreUI();
+  guessHistory.push({
+    name: currentDrawnChar.name,
+    anime: currentDrawnChar.anime,
+    img: currentDrawnChar.img,
+    isCorrect: isCorrect,
+  });
+  sessionStorage.setItem("guessHistory", JSON.stringify(guessHistory));
+  renderHistory();
 
   try {
     if (document.exitFullscreen) document.exitFullscreen();
@@ -794,3 +841,4 @@ sortAnimeList();
 renderAnimeList();
 syncMissingImages();
 updateLanguageUI();
+renderHistory();

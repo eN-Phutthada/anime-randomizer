@@ -808,3 +808,135 @@ input:checked+.slider:before {
     transform: translateY(5px);
     box-shadow: none;
 }
+
+/* --- History Section --- */
+.history-list {
+    padding: 15px;
+    max-height: 280px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: transparent;
+}
+
+.history-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.history-list::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 10px;
+}
+
+.history-item {
+    display: flex;
+    align-items: center;
+    background: var(--card-bg);
+    padding: 12px 15px;
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    animation: bounceIn 0.3s;
+}
+
+.history-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px var(--shadow-color);
+}
+
+/* แถบสีด้านซ้ายบอกสถานะ */
+.history-item.correct {
+    border-left: 6px solid #2ecc71;
+}
+
+.history-item.wrong {
+    border-left: 6px solid #ff4757;
+}
+
+.history-item img {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    /* เปลี่ยนจากวงกลมเป็นทรงสี่เหลี่ยมขอบมนให้ดูทันสมัย */
+    object-fit: cover;
+    margin-right: 15px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    background: #fff;
+}
+
+.history-item-info {
+    flex: 1;
+    text-align: left;
+    min-width: 0;
+    /* ป้องกัน Text ทะลุการ์ด */
+}
+
+.history-item-info h4 {
+    margin: 0;
+    color: var(--text-main);
+    font-size: 16px;
+    font-family: 'Itim', cursive;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.history-item-info p {
+    margin: 0;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Badge สถานะ */
+.history-status {
+    font-size: 13px;
+    font-weight: bold;
+    padding: 6px 12px;
+    border-radius: 20px;
+    white-space: nowrap;
+    margin-left: 10px;
+    font-family: 'Itim', cursive;
+}
+
+.history-item.correct .history-status {
+    background: rgba(46, 204, 113, 0.15);
+    color: #27ae60;
+}
+
+body.dark-mode .history-item.correct .history-status {
+    color: #2ecc71;
+}
+
+.history-item.wrong .history-status {
+    background: rgba(255, 71, 87, 0.15);
+    color: #c0392b;
+}
+
+body.dark-mode .history-item.wrong .history-status {
+    color: #ff6b81;
+}
+
+/* ดีไซน์ตอนที่ยังไม่มีประวัติ */
+.history-empty {
+    text-align: center;
+    padding: 30px 10px;
+    color: var(--text-muted);
+    font-family: 'Itim', cursive;
+    font-size: 18px;
+    opacity: 0.7;
+}
+
+.history-empty-icon {
+    font-size: 40px;
+    display: block;
+    margin-bottom: 10px;
+    animation: pulse 2s infinite;
+}
