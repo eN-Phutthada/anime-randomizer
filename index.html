@@ -1,3 +1,4 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="th">
 
@@ -42,8 +43,6 @@
             <div class="roll-container">
                 <button id="btnRandom" class="btn-main" onclick="randomCharacter()" style="flex: 1;">🎲
                     สุ่มตัวละคร!</button>
-                <button id="btnLock" class="btn-lock" onclick="toggleLock()"
-                    title="ล็อกปุ่มสุ่ม / Lock Button">🔓</button>
             </div>
             <button id="btnReset" class="btn-reset" onclick="resetHistory()" style="display: none;">🔄
                 ล้างความจำการสุ่ม</button>
@@ -118,6 +117,39 @@
                 <div class="anime-grid-container" id="animeSelector"></div>
             </div>
         </details>
+
+        <details class="collapsible-section">
+            <summary id="text_howToPlaySummary">📖 วิธีการเล่น & กติกา</summary>
+            <div style="padding: 20px; text-align: left; line-height: 1.6; color: var(--text-main);">
+                <h3 id="text_ruleSoloTitle" style="color: var(--primary-color); margin-bottom: 10px;">👤 โหมดทายคนเดียว
+                    (Solo Mode)</h3>
+                <ul style="margin-left: 20px; margin-bottom: 20px; color: var(--text-muted);">
+                    <li id="text_ruleSolo1">กดสุ่มตัวละครจากคลังอนิเมะของคุณ</li>
+                    <li id="text_ruleSolo2">เปิด "โหมดทายชื่อ" ในตั้งค่า เพื่อปิดบังชื่อและทดสอบความจำ!</li>
+                </ul>
+
+                <h3 id="text_rulePartyTitle" style="color: var(--secondary-color); margin-bottom: 10px;">👥
+                    โหมดเกมหน้าผาก (Party Mode)</h3>
+                <ul style="margin-left: 20px; margin-bottom: 20px; color: var(--text-muted);">
+                    <li id="text_ruleParty1">สุ่มได้ตัวละครแล้ว กดปุ่ม 'เลือกตัวนี้ให้เพื่อน!' (เล่นได้หลายคน)</li>
+                    <li id="text_ruleParty2">ให้ผู้เล่นนำมือถือไปทาบหน้าผาก (หันหน้าจอให้เพื่อนคนอื่นๆ เห็น)</li>
+                    <li id="text_ruleParty3">ผู้เล่นผลัดกันถามคำถามทีละรอบ โดยเพื่อนๆ ต้องตอบตามจริงแค่ "ใช่", "ไม่ใช่"
+                        หรือ "ไม่รู้"</li>
+                    <li id="text_ruleParty4">แข่งกันว่าใครจะทายชื่อตัวละครของตัวเองได้ก่อน! (รอ 30 วิเพื่อดูคำใบ้ได้นะ)
+                    </li>
+                </ul>
+
+                <div
+                    style="background: var(--input-bg); padding: 15px; border-radius: 12px; border: 2px dashed var(--border-color);">
+                    <strong id="text_ruleExampleTitle" style="color: var(--text-main);">💡 ตัวอย่างการถาม:</strong>
+                    <p id="text_ruleExampleDesc" style="margin-top: 5px; font-size: 15px; color: var(--text-muted);">
+                        "ฉันเป็นผู้ชายใช่ไหม?", "ฉันมีพลังวิเศษหรือเปล่า?"<br>
+                        👉 (ถ้าเพื่อนตอบ "ใช่" ให้แคบวงลงมาจนกว่าจะทายถูก!)
+                    </p>
+                </div>
+            </div>
+        </details>
+
     </div>
 
     <div class="credits-footer">

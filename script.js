@@ -1,3 +1,32 @@
+// script.js
+
+// --- Jikan API Fetcher (ป้องการ Error 429 Rate Limit และ Network Error) ---
+async function fetchFromJikan(url, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const response = await fetch(url);
+      if (response.ok) return await response.json();
+
+      if (response.status === 429) {
+        console.warn(
+          `⏳ โดนจำกัด Rate Limit กำลังรอเพื่อดึงข้อมูลใหม่... (ครั้งที่ ${i + 1})`,
+        );
+        await new Promise((r) => setTimeout(r, 1500 * (i + 1)));
+      } else if (response.status === 404) {
+        console.warn(`❌ ไม่พบข้อมูล (404) สำหรับ URL: ${url}`);
+        return null;
+      } else {
+        throw new Error(`API Error: ${response.status}`);
+      }
+    } catch (error) {
+      console.warn(`⚠️ การดึงข้อมูลล้มเหลว: ${error.message}`);
+      if (i === retries - 1) return null;
+      await new Promise((r) => setTimeout(r, 1500));
+    }
+  }
+  return null;
+}
+
 // --- Language System (Translations & AI Disclaimer) ---
 const translations = {
   title: { th: "✨ ฉันคือใครในอนิเมะ! ✨", en: "✨ Who am I in Anime! ✨" },
@@ -46,7 +75,7 @@ const translations = {
   searchAnime: { th: "🔍 ค้นหาชื่อเรื่อง...", en: "🔍 Search anime title..." },
   btnSelectAll: { th: "✅ เลือกหมด", en: "✅ Select All" },
   btnDeselectAll: { th: "❌ เอาออก", en: "❌ Deselect All" },
-  lockedBtn: { th: "🔒 ปุ่มถูกล็อก", en: "🔒 Locked" },
+  loadingLib: { th: "⏳ กำลังเตรียมคลัง...", en: "⏳ Loading Library..." },
 
   // Forehead Game Mode
   fhSetupTitle: {
@@ -100,6 +129,46 @@ const translations = {
   },
   notFound: { th: "ไม่พบข้อมูลอนิเมะ", en: "Anime not found." },
   removeConfirm: { th: "ต้องการลบ", en: "Are you sure you want to remove" },
+
+  // Rules & How to play
+  howToPlaySummary: {
+    th: "📖 วิธีการเล่น & กติกา",
+    en: "📖 How to Play & Rules",
+  },
+  ruleSoloTitle: { th: "👤 โหมดทายคนเดียว (Solo Mode)", en: "👤 Solo Mode" },
+  ruleSolo1: {
+    th: "กดสุ่มตัวละครจากคลังอนิเมะของคุณ",
+    en: "Roll a random character from your library.",
+  },
+  ruleSolo2: {
+    th: "เปิด 'โหมดทายชื่อ' ในตั้งค่า เพื่อปิดบังชื่อและทดสอบความจำ!",
+    en: "Turn on 'Guess Mode' in settings to hide names and test your memory!",
+  },
+  rulePartyTitle: {
+    th: "👥 โหมดเกมหน้าผาก (Party Mode)",
+    en: "👥 Forehead Game (Party Mode)",
+  },
+  ruleParty1: {
+    th: "สุ่มได้ตัวละครแล้ว กดปุ่ม 'เลือกตัวนี้ให้เพื่อน!' (เล่นได้หลายคน)",
+    en: "Roll a character and click 'Pick this for friend!' (Multiplayer)",
+  },
+  ruleParty2: {
+    th: "ให้ผู้เล่นนำมือถือไปทาบหน้าผาก (หันหน้าจอให้เพื่อนคนอื่นๆ เห็น)",
+    en: "Have the player hold the phone on their forehead (screen facing others).",
+  },
+  ruleParty3: {
+    th: "ผู้เล่นผลัดกันถามคำถามทีละรอบ โดยเพื่อนๆ ต้องตอบตามจริงแค่ 'ใช่', 'ไม่ใช่' หรือ 'ไม่รู้'",
+    en: "Take turns asking questions. The group can only answer 'Yes', 'No', or 'Don't know'.",
+  },
+  ruleParty4: {
+    th: "แข่งกันว่าใครจะทายชื่อตัวละครของตัวเองได้ก่อน! (รอ 30 วิเพื่อดูคำใบ้ได้นะ)",
+    en: "Compete to guess who you are first! (Wait 30s for a hint if stuck).",
+  },
+  ruleExampleTitle: { th: "💡 ตัวอย่างการถาม:", en: "💡 Example Questions:" },
+  ruleExampleDesc: {
+    th: '"ฉันเป็นผู้ชายใช่ไหม?", "ฉันมีพลังวิเศษหรือเปล่า?"\n👉 (ถ้าเพื่อนตอบ "ใช่" ให้แคบวงลงมาจนกว่าจะทายถูก!)',
+    en: '"Am I a guy?", "Do I have superpowers?"\n👉 (If yes, keep narrowing it down until you guess it!)',
+  },
 };
 
 let currentLang = localStorage.getItem("animeLang") || "th";
@@ -119,13 +188,7 @@ function updateLanguageUI() {
   document.getElementById("btnReveal").innerText = t("btnReveal");
   document.getElementById("btnSelectFriend").innerText = t("btnSelectFriend");
 
-  if (isLocked) {
-    document.getElementById("btnRandom").innerText = t("lockedBtn");
-  } else if (!document.getElementById("btnRandom").disabled) {
-    document.getElementById("btnRandom").innerText = currentDrawnChar
-      ? t("btnRandomAgain")
-      : t("btnRandom");
-  }
+  updateButtonState();
 
   document.getElementById("btnReset").innerText = t("btnReset");
   document.getElementById("text_settingsSummary").innerText =
@@ -147,6 +210,26 @@ function updateLanguageUI() {
   document.getElementById("searchAnime").placeholder = t("searchAnime");
   document.getElementById("btnSelectAll").innerText = t("btnSelectAll");
   document.getElementById("btnDeselectAll").innerText = t("btnDeselectAll");
+
+  // Rules UI
+  const howToPlayObj = document.getElementById("text_howToPlaySummary");
+  if (howToPlayObj) {
+    howToPlayObj.innerText = t("howToPlaySummary");
+    document.getElementById("text_ruleSoloTitle").innerText =
+      t("ruleSoloTitle");
+    document.getElementById("text_ruleSolo1").innerText = t("ruleSolo1");
+    document.getElementById("text_ruleSolo2").innerText = t("ruleSolo2");
+    document.getElementById("text_rulePartyTitle").innerText =
+      t("rulePartyTitle");
+    document.getElementById("text_ruleParty1").innerText = t("ruleParty1");
+    document.getElementById("text_ruleParty2").innerText = t("ruleParty2");
+    document.getElementById("text_ruleParty3").innerText = t("ruleParty3");
+    document.getElementById("text_ruleParty4").innerText = t("ruleParty4");
+    document.getElementById("text_ruleExampleTitle").innerText =
+      t("ruleExampleTitle");
+    document.getElementById("text_ruleExampleDesc").innerText =
+      t("ruleExampleDesc");
+  }
 
   // Forehead Mode UI
   document.getElementById("text_fhSetupTitle").innerText = t("fhSetupTitle");
@@ -186,32 +269,82 @@ function toggleLanguage() {
   updateLanguageUI();
 }
 
-// --- Lock Button System ---
-let isLocked = false;
-function toggleLock() {
+// --- Library Status & Main Button ---
+let isLibraryReady = false;
+let currentLoaded = null;
+let currentTotal = null;
+
+// --- Honkai Star Rail ---
+let isHSRMode = false;
+let hsrCharacters = [];
+
+async function toggleHSRMode() {
   playClickSound();
-  isLocked = !isLocked;
-  updateLockUI();
+  const btn = document.getElementById("btnRandom");
+
+  if (!isHSRMode) {
+    btn.innerText = "🚀 กำลังวาร์ปไปขบวนรถไฟ Astral...";
+    btn.disabled = true;
+
+    try {
+      const res = await fetch(
+        "https://raw.githubusercontent.com/Mar-7th/StarRailRes/master/index_new/en/characters.json",
+      );
+      const data = await res.json();
+      hsrCharacters = Object.values(data).filter((c) => c.portrait);
+      isHSRMode = true;
+      document.body.style.setProperty(
+        "--bg-gradient",
+        "linear-gradient(135deg, #1e1e2f, #3a2e5d, #7b5b8e)",
+      );
+      alert("✨ ระบบลับทำงาน: เปิดโหมด Honkai: Star Rail แล้ว! (กดสุ่มได้เลย)");
+    } catch (e) {
+      alert("❌ วาร์ปล้มเหลว: ไม่สามารถเชื่อมต่อฐานข้อมูล HSR ได้");
+    } finally {
+      btn.innerText = "";
+      updateButtonState();
+    }
+  } else {
+    isHSRMode = false;
+    applyTheme(
+      document.body.classList.contains("light-mode") ? "light" : "dark",
+    );
+    alert("❌ ปิดระบบลับ: กลับสู่โหมดอนิเมะปกติ");
+    updateButtonState();
+  }
 }
 
-function updateLockUI() {
+function updateButtonState(loaded = null, total = null) {
+  if (loaded !== null) currentLoaded = loaded;
+  if (total !== null) currentTotal = total;
+
   const btn = document.getElementById("btnRandom");
-  const lockBtn = document.getElementById("btnLock");
-  if (isLocked) {
+
+  if (!isLibraryReady && !isHSRMode) {
     btn.disabled = true;
-    btn.innerText = t("lockedBtn");
-    lockBtn.innerText = "🔒";
-    lockBtn.style.borderColor = "var(--primary-color)";
-  } else {
-    lockBtn.innerText = "🔓";
-    lockBtn.style.borderColor = "var(--border-color)";
-    if (
-      btn.innerText !== t("searching") &&
-      btn.innerText !== t("castingSpell")
-    ) {
-      btn.disabled = false;
-      btn.innerText = currentDrawnChar ? t("btnRandomAgain") : t("btnRandom");
+
+    if (currentLoaded !== null && currentTotal !== null) {
+      const percent = Math.floor((currentLoaded / currentTotal) * 100);
+      btn.innerText =
+        currentLang === "th"
+          ? `⏳ กำลังเตรียมคลัง... ${percent}% (${currentLoaded}/${currentTotal})`
+          : `⏳ Loading Library... ${percent}% (${currentLoaded}/${currentTotal})`;
+    } else {
+      btn.innerText = t("loadingLib");
     }
+    return;
+  }
+
+  currentLoaded = null;
+  currentTotal = null;
+
+  if (
+    btn.innerText !== t("searching") &&
+    btn.innerText !== t("castingSpell") &&
+    !btn.innerText.includes("วาร์ป")
+  ) {
+    btn.disabled = false;
+    btn.innerText = currentDrawnChar ? t("btnRandomAgain") : t("btnRandom");
   }
 }
 
@@ -244,6 +377,7 @@ function playTone(freq, type, duration, vol) {
 function playClickSound() {
   playTone(600, "sine", 0.1, 0.03);
 }
+
 function playLoadingSound() {
   if (!appSettings.soundEnabled) return;
   initAudio();
@@ -280,7 +414,17 @@ function applyTheme(theme) {
     document.body.classList.add("light-mode");
     document.getElementById("themeToggle").innerText = "🌞";
   }
+
+  if (isHSRMode) {
+    document.body.style.setProperty(
+      "--bg-gradient",
+      "linear-gradient(135deg, #1e1e2f, #3a2e5d, #7b5b8e)",
+    );
+  } else {
+    document.body.style.removeProperty("--bg-gradient");
+  }
 }
+
 const savedTheme = localStorage.getItem("animeTheme");
 if (savedTheme) applyTheme(savedTheme);
 else applyTheme(prefersDarkScheme.matches ? "dark" : "light");
@@ -327,68 +471,91 @@ const defaultAnimeIds = [
   5680, 37999, 52588, 34933, 30831, 52211, 33206, 32182, 58426, 48736, 31964,
   20, 18897, 19815, 52034, 30276, 29803, 527, 31240, 44942, 35790, 50265, 11757,
   37430, 54492, 20785, 849, 37779, 23755, 43692, 3455, 22319, 42249, 10033,
-  35249, 8861, 32281, 54744, 2471, 39535, 33352,
+  35249, 8861, 32281, 54744, 2471, 39535, 33352, 21, 813, 269, 5114, 14719,
+  1535, 918, 20583,
 ];
 
 let myAnimeList = JSON.parse(localStorage.getItem("myAnimeListV6")) || [];
-
-async function fetchDefaultAnimeList() {
-  if (myAnimeList.length >= defaultAnimeIds.length) return;
-
-  for (let id of defaultAnimeIds) {
-    if (!myAnimeList.some((anime) => anime.id === id)) {
-      try {
-        const res = await fetch(`https://api.jikan.moe/v4/anime/${id}`);
-        const result = await res.json();
-
-        if (result.data) {
-          myAnimeList.push({
-            id: id,
-            title: result.data.title_english || result.data.title,
-            img: result.data.images.jpg.image_url,
-            active: true,
-          });
-
-          localStorage.setItem("myAnimeListV6", JSON.stringify(myAnimeList));
-          sortAnimeList();
-          renderAnimeList();
-        }
-      } catch (error) {
-        console.error(`โหลด ID ${id} ไม่สำเร็จ`, error);
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, 500));
-    }
-  }
-}
-
-fetchDefaultAnimeList();
-
 let drawnHistory = JSON.parse(sessionStorage.getItem("drawnHistory")) || [];
 let currentDrawnChar = null;
 let guessHistory = JSON.parse(sessionStorage.getItem("guessHistory")) || [];
 const characterCache =
   JSON.parse(sessionStorage.getItem("animeCharCache")) || {};
 
+async function fetchDefaultAnimeList() {
+  let missingIds = defaultAnimeIds.filter(
+    (id) => !myAnimeList.some((anime) => anime.id === id),
+  );
+  let total = defaultAnimeIds.length;
+  let loadedCount = total - missingIds.length;
+
+  if (missingIds.length === 0) {
+    isLibraryReady = true;
+    updateButtonState();
+    syncMissingImages();
+    return;
+  }
+
+  isLibraryReady = false;
+  updateButtonState(loadedCount, total);
+
+  for (let id of missingIds) {
+    try {
+      const result = await fetchFromJikan(
+        `https://api.jikan.moe/v4/anime/${id}`,
+      );
+      if (result && result.data) {
+        myAnimeList.push({
+          id: id,
+          title: result.data.title_english || result.data.title,
+          img: result.data.images.jpg.image_url,
+          active: true,
+        });
+        localStorage.setItem("myAnimeListV6", JSON.stringify(myAnimeList));
+        sortAnimeList();
+        renderAnimeList();
+      }
+    } catch (error) {
+      console.error(`โหลด ID ${id} ไม่สำเร็จ`, error);
+    }
+
+    loadedCount++;
+    updateButtonState(loadedCount, total);
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+
+  isLibraryReady = true;
+  updateButtonState();
+  syncMissingImages();
+}
+
+fetchDefaultAnimeList();
+
 function sortAnimeList() {
   myAnimeList.sort((a, b) => a.title.localeCompare(b.title));
 }
+
 async function syncMissingImages() {
+  let hasChanges = false;
   for (let i = 0; i < myAnimeList.length; i++) {
     if (myAnimeList[i].img.includes("Loading...")) {
       try {
-        const res = await fetch(
+        const result = await fetchFromJikan(
           `https://api.jikan.moe/v4/anime/${myAnimeList[i].id}`,
         );
-        const result = await res.json();
-        if (result.data && result.data.images) {
+        if (result && result.data && result.data.images) {
           myAnimeList[i].img = result.data.images.jpg.image_url;
-          localStorage.setItem("myAnimeListV5", JSON.stringify(myAnimeList));
-          renderAnimeList();
+          hasChanges = true;
         }
-      } catch (e) {}
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      } catch (e) {
+        console.warn(`Sync image failed for ${myAnimeList[i].id}`);
+      }
+      await new Promise((resolve) => setTimeout(resolve, 400));
     }
+  }
+  if (hasChanges) {
+    localStorage.setItem("myAnimeListV6", JSON.stringify(myAnimeList));
+    renderAnimeList();
   }
 }
 
@@ -404,40 +571,53 @@ function renderAnimeList() {
       if (e.target.classList.contains("btn-remove")) return;
       playClickSound();
       anime.active = !anime.active;
-      localStorage.setItem("myAnimeListV5", JSON.stringify(myAnimeList));
+      localStorage.setItem("myAnimeListV6", JSON.stringify(myAnimeList));
       renderAnimeList();
     };
     card.innerHTML = `
-        <img src="${anime.img}" alt="${anime.title}" loading="lazy">
-        <div class="card-title">${anime.title}</div>
-        <div class="btn-remove" onclick="removeAnime(${index}); event.stopPropagation();" title="Remove">✕</div>
-      `;
+            <img src="${anime.img}" alt="${anime.title}" loading="lazy">
+            <div class="card-title">${anime.title}</div>
+            <div class="btn-remove" onclick="removeAnime(${index}); event.stopPropagation();" title="Remove">✕</div>
+        `;
     selectorDiv.appendChild(card);
   });
   updateResetButton();
 }
+
 function filterAnime() {
   renderAnimeList();
 }
+
 function toggleAllAnime(state) {
   myAnimeList.forEach((anime) => (anime.active = state));
-  localStorage.setItem("myAnimeListV5", JSON.stringify(myAnimeList));
+  localStorage.setItem("myAnimeListV6", JSON.stringify(myAnimeList));
   renderAnimeList();
 }
 
 async function addAnime() {
-  playClickSound();
   const input = document.getElementById("animeInput");
   let value = input.value.trim();
+
+  // ---- Easter Egg ----
+  const secretCode = value.toUpperCase();
+  if (secretCode === "HSR" || secretCode === "STARRAIL") {
+    input.value = "";
+    toggleHSRMode();
+    return;
+  }
+  // ----------------------------
+
+  playClickSound();
   const idMatch = value.match(/\/anime\/(\d+)/) || value.match(/^(\d+)$/);
   const animeId = idMatch ? idMatch[1] : null;
 
   if (!animeId) return alert(t("invalidLink"));
   input.value = t("searching");
   try {
-    const res = await fetch(`https://api.jikan.moe/v4/anime/${animeId}`);
-    const result = await res.json();
-    if (result.data) {
+    const result = await fetchFromJikan(
+      `https://api.jikan.moe/v4/anime/${animeId}`,
+    );
+    if (result && result.data) {
       if (!myAnimeList.find((a) => a.id == animeId)) {
         myAnimeList.push({
           id: animeId,
@@ -446,11 +626,13 @@ async function addAnime() {
           active: true,
         });
         sortAnimeList();
-        localStorage.setItem("myAnimeListV5", JSON.stringify(myAnimeList));
+        localStorage.setItem("myAnimeListV6", JSON.stringify(myAnimeList));
         renderAnimeList();
       } else {
         alert(t("alreadyInLib"));
       }
+    } else {
+      alert(t("notFound"));
     }
   } catch (e) {
     alert(t("notFound"));
@@ -458,17 +640,18 @@ async function addAnime() {
     input.value = "";
   }
 }
+
 function removeAnime(index) {
   playClickSound();
   if (confirm(`${t("removeConfirm")} ${myAnimeList[index].title}?`)) {
     myAnimeList.splice(index, 1);
-    localStorage.setItem("myAnimeListV5", JSON.stringify(myAnimeList));
+    localStorage.setItem("myAnimeListV6", JSON.stringify(myAnimeList));
     renderAnimeList();
   }
 }
 
 async function randomCharacter() {
-  if (isLocked) return;
+  if (!isLibraryReady && !isHSRMode) return;
   playLoadingSound();
 
   const nameElement = document.getElementById("charName");
@@ -480,6 +663,66 @@ async function randomCharacter() {
   const btnSelectFriend = document.getElementById("btnSelectFriend");
   const popElement = document.getElementById("charPop");
   const hintElement = document.getElementById("clickHint");
+
+  // ----  HSR  ----
+  if (isHSRMode && hsrCharacters.length > 0) {
+    button.disabled = true;
+    button.innerText = "🚀 กำลังวาร์ป...";
+    imgElement.style.display = "none";
+    imgElement.classList.remove("blur-mode");
+    loader.style.display = "block";
+    nameElement.innerText = t("castingSpell");
+    animeElement.innerText = "";
+    popElement.style.display = "none";
+    hintElement.style.display = "none";
+    btnReveal.style.display = "none";
+    btnSelectFriend.style.display = "none";
+
+    const randomPick =
+      hsrCharacters[Math.floor(Math.random() * hsrCharacters.length)];
+    const baseUrl =
+      "https://raw.githubusercontent.com/Mar-7th/StarRailRes/master/";
+
+    currentDrawnChar = {
+      id: "HSR_" + randomPick.id,
+      name: randomPick.name,
+      anime: "Honkai: Star Rail",
+      pop: randomPick.rarity * 100000,
+      img: baseUrl + randomPick.portrait,
+    };
+
+    imgElement.onload = () => {
+      loader.style.display = "none";
+      imgElement.style.display = "block";
+      playRevealSound();
+      btnSelectFriend.style.display = "inline-block";
+
+      if (appSettings.guessMode) {
+        nameElement.innerText = "????????";
+        animeElement.innerText = `${t("fromAnime")} ????????`;
+        btnReveal.style.display = "inline-block";
+      } else {
+        nameElement.innerText = currentDrawnChar.name;
+        animeElement.innerText = `${t("fromAnime")} ${currentDrawnChar.anime}`;
+        popElement.style.display = "inline-block";
+        popElement.innerText = `⭐ Rarity: ${randomPick.rarity} Star`;
+        hintElement.style.display = "block";
+      }
+      button.disabled = false;
+      button.innerText = t("btnRandomAgain");
+    };
+
+    imgElement.onerror = () => {
+      nameElement.innerText = t("errorMsg");
+      loader.style.display = "none";
+      button.disabled = false;
+      button.innerText = t("btnRandom");
+    };
+
+    imgElement.src = currentDrawnChar.img;
+    return;
+  }
+  // ----------------------------
 
   const { role, topX, minPop, guessMode, allowDupes } = appSettings;
   const activeAnimes = myAnimeList.filter((a) => a.active);
@@ -503,7 +746,6 @@ async function randomCharacter() {
     .forEach((detail) => detail.removeAttribute("open"));
 
   const shuffledAnimes = [...activeAnimes].sort(() => 0.5 - Math.random());
-
   let newDrawnChar = null;
   let apiFetches = 0;
   const maxApiFetches = 8;
@@ -515,17 +757,15 @@ async function randomCharacter() {
       if (characterCache[anime.id]) {
         characters = characterCache[anime.id];
       } else {
-        if (apiFetches >= maxApiFetches) continue;
-
+        if (apiFetches >= maxApiFetches) break;
         if (apiFetches > 0) await new Promise((r) => setTimeout(r, 400));
-        const response = await fetch(
+
+        const result = await fetchFromJikan(
           `https://api.jikan.moe/v4/anime/${anime.id}/characters`,
         );
-        if (!response.ok) continue;
+        if (!result) continue;
 
-        const result = await response.json();
         characters = result.data || [];
-
         characterCache[anime.id] = characters;
         sessionStorage.setItem(
           "animeCharCache",
@@ -541,7 +781,6 @@ async function randomCharacter() {
       }
 
       filteredChars = filteredChars.filter((c) => (c.favorites || 0) >= minPop);
-
       filteredChars.sort((a, b) => (b.favorites || 0) - (a.favorites || 0));
       filteredChars = filteredChars.slice(0, topX);
 
@@ -572,10 +811,8 @@ async function randomCharacter() {
   if (!newDrawnChar) {
     nameElement.innerText = t("noNewChar");
     loader.style.display = "none";
-    if (!isLocked) {
-      button.disabled = false;
-      button.innerText = t("btnRandom");
-    }
+    button.disabled = false;
+    button.innerText = t("btnRandom");
     if (!allowDupes)
       document.getElementById("btnReset").style.display = "block";
     return;
@@ -593,7 +830,6 @@ async function randomCharacter() {
     loader.style.display = "none";
     imgElement.style.display = "block";
     playRevealSound();
-
     btnSelectFriend.style.display = "inline-block";
 
     if (guessMode) {
@@ -608,19 +844,15 @@ async function randomCharacter() {
       hintElement.style.display = "block";
     }
 
-    if (!isLocked) {
-      button.disabled = false;
-      button.innerText = t("btnRandomAgain");
-    }
+    button.disabled = false;
+    button.innerText = t("btnRandomAgain");
   };
 
   imgElement.onerror = () => {
     nameElement.innerText = t("errorMsg");
     loader.style.display = "none";
-    if (!isLocked) {
-      button.disabled = false;
-      button.innerText = t("btnRandom");
-    }
+    button.disabled = false;
+    button.innerText = t("btnRandom");
   };
 
   imgElement.src = currentDrawnChar.img;
@@ -637,27 +869,34 @@ function revealCharacter() {
   document.getElementById("clickHint").style.display = "block";
   const popElement = document.getElementById("charPop");
   popElement.style.display = "inline-block";
-  popElement.innerText = `${t("popularity")} ${currentDrawnChar.pop.toLocaleString()} ${t("people")}`;
+
+  if (isHSRMode) {
+    popElement.innerText = currentDrawnChar.pop
+      ? `⭐ Rarity: ${currentDrawnChar.pop / 100000} Star`
+      : "";
+  } else {
+    popElement.innerText = `${t("popularity")} ${currentDrawnChar.pop.toLocaleString()} ${t("people")}`;
+  }
 }
 
 function resetHistory() {
   playClickSound();
   drawnHistory = [];
   guessHistory = [];
-
   sessionStorage.removeItem("drawnHistory");
   sessionStorage.removeItem("guessHistory");
-
   updateResetButton();
   renderHistory();
   alert(t("clearSuccess"));
 }
 
 function updateResetButton() {
-  if (!appSettings.allowDupes)
+  if (!appSettings.allowDupes) {
     document.getElementById("btnReset").style.display =
       drawnHistory.length > 0 ? "block" : "none";
-  else document.getElementById("btnReset").style.display = "none";
+  } else {
+    document.getElementById("btnReset").style.display = "none";
+  }
 }
 
 const modal = document.getElementById("imageModal");
@@ -674,9 +913,12 @@ function openModal() {
   if (charPop.style.display !== "none") {
     modalPop.innerText = charPop.innerText;
     modalPop.style.display = "inline-block";
-  } else modalPop.style.display = "none";
+  } else {
+    modalPop.style.display = "none";
+  }
   modal.style.display = "flex";
 }
+
 function closeModal() {
   playClickSound();
   modal.style.display = "none";
@@ -700,7 +942,6 @@ function renderHistory() {
 
   [...guessHistory].reverse().forEach((item) => {
     const div = document.createElement("div");
-
     const statusClass = item.isCorrect ? "correct" : "wrong";
     const statusTextTh = item.isCorrect ? "✅ ทายถูก" : "❌ ข้าม";
     const statusTextEn = item.isCorrect ? "✅ Correct" : "❌ Skipped";
@@ -726,7 +967,6 @@ function prepareForeheadGame() {
   document.getElementById("fhSetupStep").style.display = "block";
   document.getElementById("fhPlayStep").style.display = "none";
 
-  // Reset Hint
   document.getElementById("fhHintText").style.display = "none";
   document.getElementById("fhHintText").innerText = "";
   document.getElementById("btnShowHint").style.display = "none";
@@ -750,21 +990,24 @@ function startForeheadGame() {
   document.getElementById("fhSetupStep").style.display = "none";
   document.getElementById("fhPlayStep").style.display = "block";
 
-  // Set Data
   document.getElementById("fhImg").src = currentDrawnChar.img;
   document.getElementById("fhName").innerText = currentDrawnChar.name;
   document.getElementById("fhAnime").innerText =
     `${t("fromAnime")} ${currentDrawnChar.anime}`;
 
-  // Show hint button after 30 seconds
   clearTimeout(hintTimer);
-  hintTimer = setTimeout(() => {
-    document.getElementById("btnShowHint").style.display = "block";
-    playTone(800, "sine", 0.2, 0.05);
-  }, 30000);
+
+  if (!isHSRMode) {
+    hintTimer = setTimeout(() => {
+      document.getElementById("btnShowHint").style.display = "block";
+      playTone(800, "sine", 0.2, 0.05);
+    }, 30000);
+  }
 }
 
 async function fetchAndShowHint() {
+  if (isHSRMode) return;
+
   playClickSound();
   document.getElementById("btnShowHint").style.display = "none";
   document.getElementById("fhHintLoader").style.display = "block";
@@ -793,6 +1036,7 @@ async function fetchAndShowHint() {
         }
       } catch (e) {
         console.log("Translation failed");
+        shortHint = "⚠️ (ไม่สามารถแปลภาษาได้ในขณะนี้)\n" + shortHint;
       }
     }
 
