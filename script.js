@@ -169,6 +169,40 @@ const translations = {
     th: '"ฉันเป็นผู้ชายใช่ไหม?", "ฉันมีพลังวิเศษหรือเปล่า?"\n👉 (ถ้าเพื่อนตอบ "ใช่" ให้แคบวงลงมาจนกว่าจะทายถูก!)',
     en: '"Am I a guy?", "Do I have superpowers?"\n👉 (If yes, keep narrowing it down until you guess it!)',
   },
+
+  menuTitle: { th: "✨ เลือกมินิเกม ✨", en: "✨ Select Mini-Game ✨" },
+  game1Title: { th: "ฉันคือใครในอนิเมะ!", en: "Who am I in Anime!" },
+  game1Desc: {
+    th: "ทายชื่อตัวละคร หรือเล่นเกมหน้าผาก",
+    en: "Guess character or forehead game",
+  },
+  game2Title: { th: "A-Z ตะโกนชื่ออนิเมะ!", en: "A-Z Anime Shout!" },
+  game2Desc: {
+    th: "สุ่มอักษรและแข่งนึกชื่ออนิเมะให้ทันเวลา",
+    en: "Roll a letter and shout anime names",
+  },
+  btnBackMenu: { th: "⬅️ กลับเมนู", en: "⬅️ Back to Menu" },
+  azTitle: { th: "🅰️ A-Z ตะโกนชื่อ!", en: "🅰️ A-Z Shout!" },
+  azTimeSetting: { th: "⏱️ เวลา (วินาที): ", en: "⏱️ Time (sec): " },
+  azRule: {
+    th: "💡 กติกา: สุ่มได้ตัวอักษรแล้ว ให้เวลาคิด... พอเสียงหมดเวลาดังปุ๊บ ให้ทุกคนตะโกนชื่ออนิเมะที่ขึ้นต้นด้วยตัวนั้นพร้อมกัน ห้ามซ้ำ!",
+    en: "💡 Rule: Think of an anime starting with this letter. When time's up, shout it out together! No repeats!",
+  },
+  btnRollAZ: { th: "🎲 เริ่มสุ่มอักษร!", en: "🎲 Roll Letter!" },
+  btnRollAZAgain: { th: "🎲 สุ่มใหม่!", en: "🎲 Roll Again!" },
+  getReady: { th: "🔥 เตรียมตัว...", en: "🔥 Get Ready..." },
+
+  // Music Game
+  game3Title: { th: "ทายเพลงอนิเมะ!", en: "Guess Anime Music!" },
+  game3Desc: {
+    th: "สุ่มชื่อเพลงเปิด/ปิด แล้วทายว่ามาจากเรื่องอะไร",
+    en: "Guess anime from OP/ED song",
+  },
+  musicTitle: { th: "🎵 ทายเพลงอนิเมะ! 🎵", en: "🎵 Guess Anime Song! 🎵" },
+  musicRule: {
+    th: "💡 กติกา: ทายชื่ออนิเมะจากชื่อเพลงและศิลปิน (กดที่ปุ่ม YouTube เพื่อแอบฟังทำนองใบ้เพื่อนได้!)",
+    en: "💡 Rule: Guess anime from song name and artist (Click YouTube to listen!)",
+  },
 };
 
 let currentLang = localStorage.getItem("animeLang") || "th";
@@ -259,6 +293,45 @@ function updateLanguageUI() {
       document.getElementById("animeName").innerText =
         `${t("fromAnime")} ????????`;
     }
+  }
+
+  const azEls = [
+    "text_menuTitle",
+    "text_game1Title",
+    "text_game1Desc",
+    "text_game2Title",
+    "text_game2Desc",
+    "text_game3Title",
+    "text_game3Desc",
+    "text_azTitle",
+    "text_azTimeSetting",
+    "text_azRule",
+    "text_musicTitle",
+    "text_musicRule",
+  ];
+  azEls.forEach((id) => {
+    if (document.getElementById(id))
+      document.getElementById(id).innerHTML = t(id.replace("text_", ""));
+  });
+  if (document.getElementById("text_btnBackMenu1"))
+    document.getElementById("text_btnBackMenu1").innerText = t("btnBackMenu");
+  if (document.getElementById("text_btnBackMenu2"))
+    document.getElementById("text_btnBackMenu2").innerText = t("btnBackMenu");
+  if (document.getElementById("text_btnBackMenu3"))
+    document.getElementById("text_btnBackMenu3").innerText = t("btnBackMenu");
+
+  const btnAz = document.getElementById("btnStartAZ");
+  if (btnAz && btnAz.innerText.includes("!")) {
+    btnAz.innerText =
+      btnAz.innerText.includes("เริ่ม") || btnAz.innerText.includes("Roll L")
+        ? t("btnRollAZ")
+        : t("btnRollAZAgain");
+  }
+
+  const btnMusic = document.getElementById("btnStartMusic");
+  if (btnMusic) {
+    btnMusic.innerText =
+      "🎲 " + t("btnRollAZ").replace("อักษร", "เพลง").substring(3);
   }
 }
 
@@ -1087,6 +1160,504 @@ function endForeheadGame(isCorrect) {
   clearTimeout(hintTimer);
   document.getElementById("foreheadGameScreen").style.display = "none";
   document.getElementById("mainContainer").style.display = "";
+}
+
+// --- Navigation System ---
+function openWhoAmI() {
+  playClickSound();
+  document.getElementById("menuContainer").style.display = "none";
+  document.getElementById("azGameContainer").style.display = "none";
+  document.getElementById("mainContainer").style.display = "block";
+}
+
+function openAZGame() {
+  playClickSound();
+  document.getElementById("menuContainer").style.display = "none";
+  document.getElementById("mainContainer").style.display = "none";
+  document.getElementById("azGameContainer").style.display = "block";
+  updateAZTimerDisplay();
+}
+
+function goBackToMenu() {
+  playClickSound();
+  clearInterval(azInterval);
+  document.getElementById("mainContainer").style.display = "none";
+  document.getElementById("azGameContainer").style.display = "none";
+  document.getElementById("menuContainer").style.display = "block";
+
+  // Reset A-Z
+  document.getElementById("azLetterDisplay").innerText = "?";
+  updateAZTimerDisplay();
+  document.getElementById("azTimerDisplay").classList.remove("danger");
+  document.getElementById("btnStartAZ").innerText = t("btnRollAZ");
+  document.getElementById("btnStartAZ").disabled = false;
+}
+
+// --- A-Z Game Variables ---
+let azInterval;
+let azTimeout;
+let azRollAnim;
+let azDrawnHistory = [];
+const totalAZLetters = 26;
+
+function openAZGame() {
+  playClickSound();
+  document.getElementById("menuContainer").style.display = "none";
+  document.getElementById("mainContainer").style.display = "none";
+  document.getElementById("azGameContainer").style.display = "flex";
+  updateAZTimerDisplay();
+  renderAZHistory();
+}
+
+function goBackToMenu() {
+  playClickSound();
+  clearInterval(azInterval);
+  clearTimeout(azTimeout);
+  clearInterval(azRollAnim);
+
+  document.getElementById("mainContainer").style.display = "none";
+  document.getElementById("azGameContainer").style.display = "none";
+  document.getElementById("musicGameContainer").style.display = "none";
+  document.getElementById("menuContainer").style.display = "block";
+
+  document.getElementById("azLetterDisplay").innerText = "?";
+  updateAZTimerDisplay();
+  document.getElementById("azTimerDisplay").classList.remove("danger");
+
+  const btn = document.getElementById("btnStartAZ");
+  btn.innerText =
+    currentLang === "th" ? "🎲 เริ่มสุ่มอักษร!" : "🎲 Roll Letter!";
+  btn.disabled = false;
+}
+
+function updateAZTimerDisplay() {
+  let timeSetting =
+    parseFloat(document.getElementById("azTimeInput").value) || 10;
+  document.getElementById("azTimerDisplay").innerText = timeSetting.toFixed(1);
+}
+
+function renderAZHistory() {
+  const logContainer = document.getElementById("azHistoryLog");
+  const countDisplay = document.getElementById("azHistoryCount");
+  logContainer.innerHTML = "";
+
+  countDisplay.innerText = `(${azDrawnHistory.length}/${totalAZLetters})`;
+
+  azDrawnHistory.forEach((letter) => {
+    const div = document.createElement("div");
+    div.className = "az-log-item";
+    div.innerText = letter;
+    logContainer.appendChild(div);
+  });
+
+  const emptyCount = totalAZLetters - azDrawnHistory.length;
+  for (let i = 0; i < emptyCount; i++) {
+    const div = document.createElement("div");
+    div.className = "az-log-item empty";
+    div.innerText = "?";
+    logContainer.appendChild(div);
+  }
+
+  document.getElementById("btnResetAZ").style.display =
+    azDrawnHistory.length > 0 ? "inline-block" : "none";
+}
+
+function resetAZHistory() {
+  playClickSound();
+  azDrawnHistory = [];
+  document.getElementById("azLetterDisplay").innerText = "?";
+  updateAZTimerDisplay();
+  document.getElementById("btnStartAZ").innerText = t("btnRollAZ");
+  document.getElementById("btnStartAZ").disabled = false;
+  renderAZHistory();
+}
+
+function openAZModal() {
+  document.getElementById("azModal").style.display = "flex";
+  try {
+    if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen();
+    }
+  } catch (e) {}
+}
+
+function closeAZModal() {
+  playClickSound();
+  document.getElementById("azModal").style.display = "none";
+  try {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    }
+  } catch (e) {}
+}
+
+function rollAZ() {
+  if (azDrawnHistory.length >= totalAZLetters) {
+    alert(
+      currentLang === "th"
+        ? "อักษรออกครบหมดแล้ว 26 ตัว! โปรดกดรีเซ็ตเริ่มรอบใหม่"
+        : "All 26 letters drawn! Please reset.",
+    );
+    return;
+  }
+
+  clearInterval(azInterval);
+  clearTimeout(azTimeout);
+  clearInterval(azRollAnim);
+
+  try {
+    playLoadingSound();
+  } catch (e) {}
+
+  if (document.getElementById("azModal").style.display !== "flex") {
+    openAZModal();
+  }
+
+  const btn = document.getElementById("btnStartAZ");
+  const btnModalRoll = document.getElementById("btnModalRoll");
+
+  if (btn) btn.disabled = true;
+  if (btnModalRoll) {
+    btnModalRoll.disabled = true;
+    btnModalRoll.style.display = "none";
+  }
+
+  const allLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+  const availableLetters = allLetters.filter(
+    (l) => !azDrawnHistory.includes(l),
+  );
+
+  const letterDisplay = document.getElementById("azLetterDisplay");
+  const modalLetterDisplay = document.getElementById("azModalLetter");
+  const timerDisplay = document.getElementById("azTimerDisplay");
+  const modalTimerDisplay = document.getElementById("azModalTimer");
+  const modalStatus = document.getElementById("azModalStatus");
+
+  if (timerDisplay) timerDisplay.classList.remove("danger");
+  if (modalTimerDisplay) modalTimerDisplay.classList.remove("danger");
+
+  let timeSetting =
+    parseFloat(document.getElementById("azTimeInput").value) || 10;
+  let totalTicks = Math.floor(timeSetting * 10);
+
+  const initialTimeStr = (totalTicks / 10).toFixed(1);
+  if (timerDisplay) timerDisplay.innerText = initialTimeStr;
+  if (modalTimerDisplay) modalTimerDisplay.innerText = initialTimeStr;
+  if (modalStatus)
+    modalStatus.innerText =
+      currentLang === "th" ? "กำลังสุ่ม..." : "Rolling...";
+
+  let rollCount = 0;
+  const rollAgainTxt = currentLang === "th" ? "🎲 สุ่มใหม่!" : "🎲 Roll Again!";
+
+  azRollAnim = setInterval(() => {
+    const tempLetter =
+      availableLetters[Math.floor(Math.random() * availableLetters.length)];
+    if (letterDisplay) letterDisplay.innerText = tempLetter;
+    if (modalLetterDisplay) modalLetterDisplay.innerText = tempLetter;
+    rollCount++;
+
+    if (rollCount > 12) {
+      clearInterval(azRollAnim);
+
+      const finalLetter =
+        availableLetters[Math.floor(Math.random() * availableLetters.length)];
+      if (letterDisplay) letterDisplay.innerText = finalLetter;
+      if (modalLetterDisplay) modalLetterDisplay.innerText = finalLetter;
+
+      azDrawnHistory.push(finalLetter);
+      renderAZHistory();
+
+      try {
+        playRevealSound();
+      } catch (e) {}
+
+      const getReadyTxt =
+        currentLang === "th" ? "🔥 เตรียมตัว..." : "🔥 Get Ready...";
+      if (btn) btn.innerText = getReadyTxt;
+      if (modalStatus) modalStatus.innerText = getReadyTxt;
+
+      azTimeout = setTimeout(() => {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerText = rollAgainTxt;
+        }
+        if (modalStatus)
+          modalStatus.innerText =
+            currentLang === "th"
+              ? "เงียบไว้... คิดชื่ออนิเมะ! 🤔"
+              : "Think of an anime! 🤔";
+
+        azInterval = setInterval(() => {
+          totalTicks--;
+
+          if (totalTicks <= 0) {
+            totalTicks = 0;
+            clearInterval(azInterval);
+
+            if (timerDisplay) timerDisplay.innerText = "0.0";
+            if (modalTimerDisplay) modalTimerDisplay.innerText = "0.0";
+            if (modalStatus)
+              modalStatus.innerText =
+                currentLang === "th"
+                  ? "หมดเวลา! ตะโกนเลย! 🗣️"
+                  : "Time's Up! Shout! 🗣️";
+
+            if (btnModalRoll) {
+              btnModalRoll.style.display = "inline-block";
+              btnModalRoll.disabled = false;
+            }
+
+            if (azDrawnHistory.length >= totalAZLetters) {
+              if (btn) {
+                btn.innerText =
+                  currentLang === "th"
+                    ? "จบเกม! ครบ A-Z แล้ว"
+                    : "Game Over! All Done";
+                btn.disabled = true;
+              }
+              if (btnModalRoll) {
+                btnModalRoll.innerText =
+                  currentLang === "th"
+                    ? "รีเซ็ตเพื่อเล่นใหม่"
+                    : "Reset to Play Again";
+                btnModalRoll.onclick = () => {
+                  closeAZModal();
+                  resetAZHistory();
+                };
+              }
+            } else {
+              if (btn) btn.innerText = "หมดเวลา! " + rollAgainTxt;
+              if (btnModalRoll) {
+                btnModalRoll.innerText = rollAgainTxt;
+                btnModalRoll.onclick = rollAZ;
+              }
+            }
+
+            try {
+              if (typeof playTimesUpSound === "function") {
+                playTimesUpSound();
+              } else {
+                playTone(1046.5, "sine", 1.0, 0.5);
+              }
+            } catch (e) {
+              console.warn("Sound blocked or error:", e);
+            }
+          } else {
+            const timeStr = (totalTicks / 10).toFixed(1);
+            if (timerDisplay) timerDisplay.innerText = timeStr;
+            if (modalTimerDisplay) modalTimerDisplay.innerText = timeStr;
+
+            if (totalTicks <= 30) {
+              if (timerDisplay) timerDisplay.classList.add("danger");
+              if (modalTimerDisplay) modalTimerDisplay.classList.add("danger");
+              if (totalTicks % 10 === 0) {
+                try {
+                  playTone(800, "sine", 0.1, 0.05);
+                } catch (e) {}
+              }
+            }
+          }
+        }, 100);
+      }, 1500);
+    }
+  }, 50);
+}
+
+function openMusicGame() {
+  playClickSound();
+  document.getElementById("menuContainer").style.display = "none";
+  document.getElementById("mainContainer").style.display = "none";
+  document.getElementById("azGameContainer").style.display = "none";
+  document.getElementById("musicGameContainer").style.display = "block";
+  updateMusicLanguageUI();
+}
+
+// --- Music Game System ---
+let currentMusic = null;
+let currentMusicAnime = null;
+let musicAudioUrl = null;
+let musicAudio = null;
+
+const popularAnimeSongs = [
+  { name: "Idol", artist: "YOASOBI", anime: "Oshi no Ko", type: "OP" },
+  { name: "Bling-Bang-Bang-Born", artist: "Creepy Nuts", anime: "Mashle: Magic and Muscles", type: "OP" },
+  { name: "Unravel", artist: "TK from Ling tosite sigure", anime: "Tokyo Ghoul", type: "OP" },
+  { name: "Gurenge", artist: "LiSA", anime: "Demon Slayer", type: "OP" },
+  { name: "Kaikai Kitan", artist: "Eve", anime: "Jujutsu Kaisen", type: "OP" },
+  { name: "SPECIALZ", artist: "King Gnu", anime: "Jujutsu Kaisen", type: "OP" },
+  { name: "Kick Back", artist: "Kenshi Yonezu", anime: "Chainsaw Man", type: "OP" },
+  { name: "The Rumbling", artist: "SiM", anime: "Attack on Titan", type: "OP" },
+  { name: "Guren no Yumiya", artist: "Linked Horizon", anime: "Attack on Titan", type: "OP" },
+  { name: "Shinzo wo Sasageyo!", artist: "Linked Horizon", anime: "Attack on Titan", type: "OP" },
+  { name: "Silhouette", artist: "KANA-BOON", anime: "Naruto: Shippuden", type: "OP" },
+  { name: "Blue Bird", artist: "Ikimonogakari", anime: "Naruto: Shippuden", type: "OP" },
+  { name: "Cruel Angel's Thesis", artist: "Yoko Takahashi", anime: "Neon Genesis Evangelion", type: "OP" },
+  { name: "Butter-Fly", artist: "Koji Wada", anime: "Digimon Adventure", type: "OP" },
+  { name: "Again", artist: "YUI", anime: "Fullmetal Alchemist: Brotherhood", type: "OP" },
+  { name: "Peace Sign", artist: "Kenshi Yonezu", anime: "My Hero Academia", type: "OP" },
+  { name: "Cry Baby", artist: "Official HIGE DANdism", anime: "Tokyo Revengers", type: "OP" },
+  { name: "Inferno", artist: "Mrs. GREEN APPLE", anime: "Fire Force", type: "OP" },
+  { name: "Crossing Field", artist: "LiSA", anime: "Sword Art Online", type: "OP" },
+  { name: "COLORS", artist: "FLOW", anime: "Code Geass", type: "OP" },
+  { name: "Renai Circulation", artist: "Kana Hanazawa", anime: "Bakemonogatari", type: "OP" },
+  { name: "Connect", artist: "ClariS", anime: "Puella Magi Madoka Magica", type: "OP" },
+  { name: "Cha-La Head-Cha-La", artist: "Hironobu Kageyama", anime: "Dragon Ball Z", type: "OP" },
+  { name: "We Are!", artist: "Hiroshi Kitadani", anime: "One Piece", type: "OP" },
+  { name: "Kyouran Hey Kids!!", artist: "THE ORAL CIGARETTES", anime: "Noragami", type: "OP" }
+];
+
+function updateMusicLanguageUI() {
+  document.getElementById("text_btnBackMenu3").innerText = t("btnBackMenu");
+  document.getElementById("text_musicTitle").innerText = t("musicTitle");
+  document.getElementById("text_musicRule").innerText = t("musicRule");
+  const btnMusic = document.getElementById("btnStartMusic");
+  if (currentLang === "th") {
+    btnMusic.innerText = "🎲 สุ่มเพลง!";
+  } else {
+    btnMusic.innerText = "🎲 Roll Song!";
+  }
+}
+
+async function searchAudioPreview(songName, artist) {
+    try {
+        const query = encodeURIComponent(`${songName} ${artist}`);
+        const res = await fetch(`https://itunes.apple.com/search?term=${query}&entity=song&limit=1`);
+        const data = await res.json();
+        if (data.results && data.results.length > 0) {
+            return data.results[0].previewUrl;
+        }
+        
+        // Fallback: search just the song name if combined search fails
+        const fallbackRes = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(songName)}&entity=song&limit=1`);
+        const fallbackData = await fallbackRes.json();
+        if (fallbackData.results && fallbackData.results.length > 0) {
+            return fallbackData.results[0].previewUrl;
+        }
+    } catch (e) {
+        console.warn("Audio search failed", e);
+    }
+    return null;
+}
+
+async function rollMusic() {
+  playLoadingSound();
+
+  const musicLoader = document.getElementById("musicLoader");
+  const musicInfo = document.getElementById("musicInfo");
+  const vinylRecord = document.getElementById("vinylRecord");
+
+  musicLoader.style.display = "block";
+  musicInfo.style.display = "none";
+
+  // Spin vinyl
+  vinylRecord.style.animation = "none";
+  setTimeout(() => {
+    vinylRecord.style.animation = "spin 2s linear infinite";
+  }, 10);
+
+  // Pick random popular OP
+  currentMusic = popularAnimeSongs[Math.floor(Math.random() * popularAnimeSongs.length)];
+
+  // Display masked music info
+  document.getElementById("songName").innerText = "????????";
+  document.getElementById("artistName").innerText = `by ????????`;
+  document.getElementById("musicType").innerText = currentMusic.type + " (Opening)";
+  document.getElementById("musicAnimeName").style.display = "none";
+  document.getElementById("musicAnimeName").innerText = "";
+  document.getElementById("btnYoutube").style.display = "none";
+  document.getElementById("btnRevealMusic").innerText = t("btnReveal");
+  document.getElementById("btnRevealMusic").style.display = "block";
+
+  const audioPlayer = document.getElementById("audioPlayer");
+  const audioErrorMsg = document.getElementById("audioErrorMsg");
+  const indicator = document.getElementById("musicPlayingIndicator");
+  
+  if (audioPlayer) {
+      audioPlayer.style.display = "none";
+      audioPlayer.pause();
+      audioPlayer.src = "";
+  }
+  if (audioErrorMsg) audioErrorMsg.style.display = "none";
+  if (indicator) indicator.style.display = "none";
+
+  musicLoader.style.display = "none";
+  musicInfo.style.display = "block";
+
+  // Search and set up audio
+  const previewUrl = await searchAudioPreview(currentMusic.name, currentMusic.artist);
+  if (previewUrl && audioPlayer) {
+      audioPlayer.src = previewUrl;
+      audioPlayer.style.display = "block";
+      
+      audioPlayer.onplay = () => {
+          vinylRecord.style.animation = "spin 2s linear infinite";
+          if (indicator) indicator.style.display = "block";
+      };
+      audioPlayer.onpause = () => {
+          vinylRecord.style.animation = "none";
+          if (indicator) indicator.style.display = "none";
+      };
+      audioPlayer.onended = () => {
+          vinylRecord.style.animation = "none";
+          if (indicator) indicator.style.display = "none";
+      };
+
+      try {
+          await audioPlayer.play();
+      } catch (e) {
+          console.warn("Autoplay prevented:", e);
+          vinylRecord.style.animation = "none";
+      }
+  } else {
+      if (audioErrorMsg) audioErrorMsg.style.display = "block";
+      vinylRecord.style.animation = "none";
+      // Optional: keep the beep sound if audio not found
+      playMusicPlaybackSound();
+  }
+}
+
+function playMusicPlaybackSound() {
+  // Show "Now Playing" indicator
+  const indicator = document.getElementById("musicPlayingIndicator");
+  if (indicator) {
+    indicator.style.display = "block";
+  }
+
+  // Play a series of ascending tones to indicate music is "playing"
+  if (!appSettings.soundEnabled) return;
+  initAudio();
+
+  const notes = [523.25, 587.33, 659.25, 783.99]; // C, D, E, G
+  notes.forEach((freq, idx) => {
+    setTimeout(() => {
+      playTone(freq, "sine", 0.3, 0.02);
+    }, idx * 150);
+  });
+}
+
+function revealMusicAnime() {
+  playRevealSound();
+  if (currentMusic) {
+    // Hide playing indicator if audio is not actually playing
+    const audioPlayer = document.getElementById("audioPlayer");
+    if (!audioPlayer || audioPlayer.paused) {
+      const vinylRecord = document.getElementById("vinylRecord");
+      if (vinylRecord) vinylRecord.style.animation = "none";
+      const indicator = document.getElementById("musicPlayingIndicator");
+      if (indicator) indicator.style.display = "none";
+    }
+
+    document.getElementById("songName").innerText = currentMusic.name;
+    document.getElementById("artistName").innerText = `by ${currentMusic.artist}`;
+    document.getElementById("musicAnimeName").innerText = currentMusic.anime;
+    document.getElementById("musicAnimeName").style.display = "block";
+
+    const searchQuery = encodeURIComponent(`${currentMusic.name} ${currentMusic.artist}`);
+    document.getElementById("btnYoutube").href = `https://www.youtube.com/results?search_query=${searchQuery}`;
+    document.getElementById("btnYoutube").style.display = "block";
+    document.getElementById("btnRevealMusic").style.display = "none";
+  }
 }
 
 // Initial Calls

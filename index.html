@@ -20,7 +20,32 @@
         <button id="themeToggle" class="icon-btn" onclick="toggleTheme()" title="สลับโหมด มืด/สว่าง">🌞</button>
     </div>
 
-    <div class="container" id="mainContainer">
+    <div class="container" id="menuContainer">
+        <h1 class="anime-title" id="text_menuTitle">✨ เลือกมินิเกม ✨</h1>
+        <div class="menu-grid">
+            <div class="menu-card" onclick="openWhoAmI()">
+                <div class="menu-icon">🎲</div>
+                <h3 id="text_game1Title">ฉันคือใครในอนิเมะ!</h3>
+                <p id="text_game1Desc" class="hint-text" style="margin-top: 5px;">ทายชื่อตัวละคร หรือเล่นเกมหน้าผาก</p>
+            </div>
+            <div class="menu-card" onclick="openAZGame()">
+                <div class="menu-icon">🅰️</div>
+                <h3 id="text_game2Title">A-Z ตะโกนชื่ออนิเมะ!</h3>
+                <p id="text_game2Desc" class="hint-text" style="margin-top: 5px;">
+                    สุ่มอักษรและแข่งนึกชื่ออนิเมะให้ทันเวลา</p>
+            </div>
+            <div class="menu-card" onclick="openMusicGame()">
+                <div class="menu-icon">🎵</div>
+                <h3 id="text_game3Title">ทายเพลงอนิเมะ!</h3>
+                <p id="text_game3Desc" class="hint-text" style="margin-top: 5px;">สุ่มชื่อเพลงเปิด/ปิด
+                    แล้วทายว่ามาจากเรื่องอะไร</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" id="mainContainer" style="display: none;">
+        <button class="btn-reset" onclick="goBackToMenu()" id="text_btnBackMenu1"
+            style="width: auto; padding: 5px 15px; margin-bottom: 15px; display: inline-block;">⬅️ กลับเมนู</button>
         <h1 class="anime-title" id="text_title">✨ ฉันคือใครในอนิเมะ! ✨</h1>
 
         <div id="result" class="result-card">
@@ -150,6 +175,109 @@
             </div>
         </details>
 
+    </div>
+
+    <div class="container az-container-layout" id="azGameContainer" style="display: none; max-width: 900px;">
+
+        <div class="az-main-content">
+            <button class="btn-reset" onclick="goBackToMenu()" id="text_btnBackMenu2"
+                style="width: auto; padding: 8px 20px; margin-bottom: 20px; display: inline-flex; align-items: center; gap: 5px;">
+                ⬅️ กลับเมนู
+            </button>
+            <h1 class="anime-title" id="text_azTitle">🅰️ A-Z ตะโกนชื่อ!</h1>
+
+            <div class="az-settings">
+                <span id="text_azTimeSetting" class="toggle-label">⏱️ เวลา (วินาที): </span>
+                <input type="number" id="azTimeInput" class="num-input" value="10" min="3" max="60" style="width: 80px;"
+                    onchange="updateAZTimerDisplay()">
+            </div>
+
+            <div class="az-display-card">
+                <div id="azLetterDisplay" class="az-letter">?</div>
+                <div id="azTimerDisplay" class="az-timer">10.0</div>
+            </div>
+
+            <button id="btnStartAZ" class="btn-main" onclick="rollAZ()">🎲 เริ่มสุ่มอักษร!</button>
+            <button id="btnResetAZ" class="btn-reset" onclick="resetAZHistory()"
+                style="display: none; margin-top: 10px;">
+                🔄 รีเซ็ตตัวอักษรทั้งหมด
+            </button>
+
+            <p class="hint-text" id="text_azRule"
+                style="margin-top: 20px; font-size: 15px; padding: 15px; background: var(--input-bg); border-radius: 12px; border: 1px dashed var(--border-color);">
+                💡 <b>กติกา:</b> สุ่มได้ตัวอักษรแล้ว ให้เวลาคิด... พอเสียงหมดเวลาดังปุ๊บ
+                ให้ทุกคนตะโกนชื่ออนิเมะที่ขึ้นต้นด้วยตัวนั้นพร้อมกัน <b>ห้ามซ้ำ!</b>
+            </p>
+        </div>
+
+        <div class="az-history-section">
+            <h3 style="color: var(--text-main); font-family: 'Itim', cursive; margin-bottom: 15px; text-align: center;">
+                📜 ตัวอักษรที่ออกไปแล้ว <span id="azHistoryCount">(0/26)</span>
+            </h3>
+            <div id="azHistoryLog" class="az-history-log">
+            </div>
+        </div>
+
+        <div id="azModal" class="modal">
+            <span class="close" onclick="closeAZModal()">&times;</span>
+            <div class="modal-content-wrapper az-modal-box">
+                <h2 id="azModalStatus" class="az-modal-status">กำลังสุ่ม...</h2>
+                <div id="azModalLetter" class="az-modal-letter">?</div>
+                <div id="azModalTimer" class="az-modal-timer">10.0</div>
+
+                <button id="btnModalRoll" class="btn-main" onclick="rollAZ()"
+                    style="display: none; margin-top: 20px; font-size: 24px; width: 100%; max-width: 300px; box-shadow: 0 5px 15px var(--shadow-color);">
+                    🎲 สุ่มตัวต่อไป!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" id="musicGameContainer" style="display: none; max-width: 600px;">
+        <button class="btn-reset" onclick="goBackToMenu()" id="text_btnBackMenu3"
+            style="width: auto; padding: 8px 20px; margin-bottom: 20px; display: inline-flex; align-items: center; gap: 5px;">
+            ⬅️ กลับเมนู
+        </button>
+        <h1 class="anime-title" id="text_musicTitle">🎵 ทายเพลงอนิเมะ! 🎵</h1>
+
+        <div class="music-card">
+            <div class="vinyl-record" id="vinylRecord">
+                <div class="vinyl-center"></div>
+            </div>
+
+            <div id="musicPlayingIndicator" class="music-playing-indicator"
+                style="display: none; text-align: center; margin-top: 15px; font-size: 18px; color: var(--primary-color); animation: pulse 1s infinite;">
+                🎵 Now Playing...
+            </div>
+
+            <div id="musicLoader" class="loader" style="display: none; margin-top: 20px;"></div>
+
+            <div id="musicInfo" style="display: none; margin-top: 20px;">
+                <p class="music-type" id="musicType">OP (Opening)</p>
+                <h2 id="songName" class="song-name">Song Name</h2>
+                <p id="artistName" class="artist-name">by Artist</p>
+
+                <audio id="audioPlayer" controls style="display: none; margin: 15px auto; width: 100%; border-radius: 8px; outline: none;"></audio>
+                <p id="audioErrorMsg" class="hint-text" style="display:none; color: var(--text-muted); margin-top: 10px; font-size: 14px;">⚠️ ไม่พบตัวอย่างเสียง (Audio preview not found)</p>
+
+                <div class="anime-reveal-box">
+                    <button id="btnRevealMusic" class="btn-reveal" onclick="revealMusicAnime()"
+                        style="margin: 15px auto;">👁️ ดูเฉลยอนิเมะ</button>
+                    <p id="musicAnimeName" class="music-anime-name" style="display: none;">Anime Name</p>
+                </div>
+
+                <a id="btnYoutube" class="btn-youtube" href="#" target="_blank" style="display: none;">
+                    ▶️ ค้นหาเพลงนี้ใน YouTube
+                </a>
+            </div>
+        </div>
+
+        <button id="btnStartMusic" class="btn-main" onclick="rollMusic()" style="margin-top: 20px;">🎲
+            สุ่มเพลง!</button>
+
+        <p class="hint-text" id="text_musicRule" style="margin-top: 20px; font-size: 15px;">
+            💡 กติกา: ทายชื่ออนิเมะจากชื่อเพลงและศิลปิน (กดที่ปุ่ม YouTube เพื่อแอบฟังทำนองใบ้เพื่อนได้!)
+        </p>
     </div>
 
     <div class="credits-footer">
