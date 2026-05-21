@@ -16,8 +16,7 @@ A fun, interactive web-based game where you roll random anime characters from yo
 
 - **Custom Anime Library:** Add your favorite anime using MyAnimeList links or IDs (Powered by Jikan API).
 - **Game 1: Solo/Party Mode (Forehead Game):** Hide character names to test your knowledge, or hold your phone to your forehead and let your friends give you hints!
-- **Game 2: A-Z Anime Shout:** Roll a random alphabet letter and race against the clock to shout out an anime title starting with that letter.
-- **Game 3: Anime Song Guessing:** Roll a random anime Opening (OP) or Ending (ED) song. Guess which anime it belongs to based on the song title and artist.
+- **Game 2: Anime Song Guessing:** Roll a random anime Opening (OP) or Ending (ED) song. Guess which anime it belongs to based on the song title and artist.
 - **Advanced Filters:** Roll characters based on their roles (Main/Supporting), popularity, or top-ranked lists.
 - **Smart Rate-Limit Handling:** Built-in delay system to prevent API bans while fetching large amounts of anime data.
 - **Customization:** Light/Dark mode, Sound Effects, Bilingual support (English & Thai).
@@ -39,7 +38,7 @@ A fun, interactive web-based game where you roll random anime characters from yo
 4. The group can only answer **"Yes"**, **"No"**, or **"Don't know"**.
 5. Compete to guess the character first! (If stuck, a "Show Hint" button appears after 30 seconds).
 
-**🎵 Game 3 - Anime Song Guessing:**
+**🎵 Game 2 - Anime Song Guessing:**
 
 1. Click **"Roll Song!"**. The system will fetch a random OP/ED from your active library.
 2. The screen displays the song name and artist. Guess the anime!
@@ -70,8 +69,7 @@ This is a purely front-end project. No server setup is required!
 
 - **จัดการคลังอนิเมะของตัวเอง:** เพิ่มเรื่องที่ชอบได้ง่ายๆ แค่ใส่ลิงก์หรือ ID จาก MyAnimeList (ใช้ฐานข้อมูลจาก Jikan API)
 - **เกมที่ 1: โหมดทายชื่อ / เกมหน้าผาก:** ปิดบังชื่อตัวละครแล้วทายว่าเขาคือใครจากรูปภาพ หรือจะทาบมือถือไว้บนหน้าผากแล้วให้เพื่อนใบ้ก็ได้
-- **เกมที่ 2: A-Z ตะโกนชื่ออนิเมะ:** สุ่มตัวอักษรภาษาอังกฤษมา 1 ตัว แล้วแข่งกันตะโกนชื่ออนิเมะที่ขึ้นต้นด้วยตัวอักษรนั้นให้ทันเวลา
-- **เกมที่ 3: ทายเพลงอนิเมะ:** สุ่มรายชื่อเพลงเปิด (OP) หรือเพลงปิด (ED) จากคลัง แล้วทายว่ามาจากอนิเมะเรื่องอะไร
+- **เกมที่ 2: ทายเพลงอนิเมะ:** สุ่มรายชื่อเพลงเปิด (OP) หรือเพลงปิด (ED) จากคลัง แล้วทายว่ามาจากอนิเมะเรื่องอะไร
 - **ระบบคัดกรองสุดล้ำ:** เลือกสุ่มเฉพาะพระเอก/นางเอก, ตัวประกอบ, สุ่มตามความนิยมขั้นต่ำ หรือสุ่มจากตัวละครท็อปฮิตได้
 - **ระบบจัดการ API อัจฉริยะ:** มีระบบหน่วงเวลาอัตโนมัติ ป้องกันเว็บค้างจากการโดน API บล็อก (Rate Limit)
 - **ปรับแต่งได้ตามใจ:** รองรับโหมดมืด/สว่าง, เปิด-ปิดเสียงประกอบ, และสลับภาษาได้ (ไทย/อังกฤษ)
@@ -93,7 +91,7 @@ This is a purely front-end project. No server setup is required!
 4. เพื่อนๆ ต้องตอบตามจริงแค่ **"ใช่"**, **"ไม่ใช่"** หรือ **"ไม่รู้"**
 5. แข่งกันว่าใครจะทายชื่อตัวละครของตัวเองได้ก่อน! (หากทายไม่ออก รอ 30 วิจะมีปุ่มขอคำใบ้โผล่มาช่วย)
 
-**🎵 เกมที่ 3 - โหมดทายเพลงอนิเมะ:**
+**🎵 เกมที่ 2 - โหมดทายเพลงอนิเมะ:**
 
 1. กดปุ่ม **"สุ่มเพลง!"** ระบบจะสุ่มเพลง OP/ED จากรายชื่ออนิเมะที่คุณติ๊กไว้
 2. เมื่อได้ชื่อเพลงและศิลปินแล้ว ให้ช่วยกันนึกว่านี่คือเพลงจากเรื่องอะไร!
